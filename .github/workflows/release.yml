@@ -1,0 +1,97 @@
+name: Release
+
+# Builds the firmware of a GitHub release, attaches the files the web flasher
+# installs (bootloader, partitions, boot_app0, app + manifest.json) and asks
+# Vercel to rebuild wualeds.com, which picks the new version up at build time.
+#
+# Runs by itself when a release is published. "Run workflow" rebuilds an
+# existing tag (e.g. one tagged before this workflow existed).
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to build (e.g. v0.3)
+        required: true
+      allow_version_mismatch:
+        description: Build even if WUA_FIRMWARE_VERSION does not match the tag
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.release.tag_name || inputs.tag }}
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.tag }}
+  PIO_ENV: c3_release
+
+jobs:
+  release:
+    name: Build ${{ github.event.release.tag_name || inputs.tag }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # Release tooling from this workflow's revision, firmware from the tag.
+      - uses: actions/checkout@v4
+        with:
+          path: ci
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          path: fw
+
+      - name: Check firmware version
+        working-directory: fw
+        env:
+          ALLOW_MISMATCH: ${{ inputs.allow_version_mismatch || false }}
+        run: |
+          code=$(sed -n 's/^#define WUA_FIRMWARE_VERSION "\(.*\)"/\1/p' src/config/Config.h)
+          if [ "v$code" != "$TAG" ] && [ "$code" != "$TAG" ]; then
+            msg="src/config/Config.h says WUA_FIRMWARE_VERSION \"$code\" but the tag is $TAG"
+            if [ "$ALLOW_MISMATCH" = "true" ]; then echo "::warning::$msg"; else echo "::error::$msg"; exit 1; fi
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-pio-${{ hashFiles('fw/platformio.ini') }}
+          restore-keys: ${{ runner.os }}-pio-
+
+      - name: Install PlatformIO Core
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade platformio
+
+      - name: Build ${{ env.PIO_ENV }}
+        working-directory: fw
+        run: pio run -e "$PIO_ENV"
+
+      - name: Collect release files
+        working-directory: fw
+        run: python ../ci/tools/release_assets.py "$TAG" "$PIO_ENV" ../dist
+
+      - name: Attach files to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" dist/* --clobber --repo "$GITHUB_REPOSITORY"
+
+      - name: Rebuild wualeds.com
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::VERCEL_DEPLOY_HOOK is not set: the website shows this release on its next deploy."
+          else
+            curl -fsS -X POST "$HOOK" > /dev/null && echo "Website rebuild requested."
+          fi

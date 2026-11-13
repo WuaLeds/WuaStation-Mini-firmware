@@ -115,6 +115,26 @@ Toolchain: pioarduino `55.03.37` (Arduino-ESP32 core 3.3.7). The
 WuaDisplay-LMX library is pinned to a commit in `platformio.ini`; to develop
 the library side by side, point `lib_deps` to a local `symlink://` path.
 
+## Releases
+
+Each GitHub release is also published on
+[wualeds.com/firmware](https://wualeds.com/firmware), the page that installs the
+firmware straight from the browser. To publish a version:
+
+1. Set `WUA_FIRMWARE_VERSION` in `src/config/Config.h` (e.g. `"0.3"`) and push.
+2. Create a release with the tag `v0.3`. Write the notes as two bullet lists
+   under the headings `## English` and `## Español`: the website shows each
+   one in its language.
+3. The [Release](.github/workflows/release.yml) workflow builds `c3_release`,
+   attaches the files the web flasher installs (`bootloader.bin`,
+   `partitions.bin`, `boot_app0.bin`, `firmware.bin` and a `manifest.json`
+   with each part's offset, size and SHA-256, made by
+   [`tools/release_assets.py`](tools/release_assets.py)) and calls the
+   `VERCEL_DEPLOY_HOOK` secret so the website is rebuilt with the new version.
+
+The workflow stops if `WUA_FIRMWARE_VERSION` does not match the tag. To rebuild
+an existing tag, run it by hand from the Actions tab (*Run workflow*).
+
 ## Project structure
 
 ```
