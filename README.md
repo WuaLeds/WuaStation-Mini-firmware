@@ -43,7 +43,7 @@ Rotation (screens without data are skipped automatically):
 | Date | `DD.MM` |
 | Weather | Open-Meteo: condition icon (day/night) + temperature, then humidity |
 | Indoor | I2C sensor: temperature, humidity, pressure (BME280) |
-| Ticker | Binance: `BTC/USDT 97234 +2.3%` per symbol, green/red by trend |
+| Ticker | Binance, fixed pages per symbol: name `BTC` → price `97.2K` (green/red by trend) → 24 h change `+2.3%` |
 | Message | Custom text from the settings page |
 | Celebration | Monthly anniversary message (ported from WuaDisplay-r1) |
 
@@ -52,6 +52,10 @@ Interrupt screens (preempt the rotation, highest first): **Alarm** >
 
 Static screens use a compact 3x7 font (`display/TinyFont`) so `12:34` fits the
 18 px width, and crossfade between each other with the library effects engine.
+Ticker prices get as many decimals as fit (`3457`, `145.7`, `0.457`) and are
+abbreviated when needed (`97.2K`, at most 1 % rounding). The rare page that
+still does not fit (e.g. `MATIC`, `0.00001234`) pans slowly instead of
+scrolling away. Page timings are in `Config::kTicker*`.
 Scrolling text uses the classic 5x7 GFX font with UTF-8 to CP437 conversion
 (accents, n-tilde, inverted marks, degree sign).
 

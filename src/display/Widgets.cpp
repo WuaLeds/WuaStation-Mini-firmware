@@ -27,4 +27,27 @@ namespace Widgets
             TinyFont::drawCentered(g, value, color);
         }
     }
+
+    int16_t textWidth(Font font, const char *text)
+    {
+        if (font == Font::Tiny)
+            return TinyFont::textWidth(text);
+        // Classic GFX font at size 1: 5 px glyphs + 1 px spacing, monospaced.
+        const int16_t n = static_cast<int16_t>(strlen(text));
+        return n > 0 ? n * 6 - 1 : 0;
+    }
+
+    void drawText(Adafruit_GFX &g, Font font, int16_t x, const char *text, uint16_t color)
+    {
+        if (font == Font::Tiny)
+        {
+            TinyFont::draw(g, x, 0, text, color);
+            return;
+        }
+        g.setFont(nullptr);
+        g.setTextSize(1);
+        g.setTextColor(color);
+        g.setCursor(x, 0);
+        g.print(text);
+    }
 }

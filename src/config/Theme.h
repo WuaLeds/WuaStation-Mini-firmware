@@ -29,6 +29,7 @@ namespace Theme
     constexpr Rgb kHumidity{60, 160, 255};
     constexpr Rgb kPressure{190, 120, 255};
 
+    constexpr Rgb kTickerName{255, 170, 0};
     constexpr Rgb kTickerUp{0, 230, 60};
     constexpr Rgb kTickerDown{255, 40, 30};
     constexpr Rgb kTickerFlat{210, 210, 210};

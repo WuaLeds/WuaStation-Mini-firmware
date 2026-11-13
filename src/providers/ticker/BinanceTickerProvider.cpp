@@ -15,6 +15,26 @@ namespace
         const char *s = v.as<const char *>();
         return s ? strtod(s, nullptr) : v.as<double>();
     }
+
+    // Best-effort base asset until exchangeInfo answers: "BTCUSDT" -> "BTC".
+    void guessBase(const char *symbol, char *out, size_t size)
+    {
+        static const char *const kQuotes[] = {"FDUSD", "USDT", "USDC", "BUSD", "TUSD", "EUR",
+                                              "TRY", "BRL", "ARS", "BTC", "ETH", "BNB"};
+        const size_t len = strlen(symbol);
+        for (const char *quote : kQuotes)
+        {
+            const size_t qlen = strlen(quote);
+            if (len > qlen && strcmp(symbol + len - qlen, quote) == 0)
+            {
+                const size_t blen = len - qlen < size - 1 ? len - qlen : size - 1;
+                memcpy(out, symbol, blen);
+                out[blen] = '\0';
+                return;
+            }
+        }
+        strlcpy(out, symbol, size);
+    }
 }
 
 void BinanceTickerProvider::configure(const char *symbolsCsv)
@@ -31,6 +51,7 @@ void BinanceTickerProvider::configure(const char *symbolsCsv)
             memcpy(q.symbol, p, len);
             q.symbol[len] = '\0';
             strlcpy(q.pair, q.symbol, sizeof(q.pair));
+            guessBase(q.symbol, q.base, sizeof(q.base));
             q.status = QuoteStatus::Pending;
         }
         if (!comma)
@@ -74,6 +95,7 @@ bool BinanceTickerProvider::fetchMeta(TickerQuote &q, int &code)
     const char *quote = doc["symbols"][0]["quoteAsset"];
     if (!base || !quote)
         return false;
+    strlcpy(q.base, base, sizeof(q.base));
     snprintf(q.pair, sizeof(q.pair), "%s/%s", base, quote);
     return true;
 }

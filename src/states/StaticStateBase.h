@@ -35,7 +35,14 @@ protected:
     // Draw the complete frame. The canvas is already cleared.
     virtual void render(Adafruit_GFX &canvas) = 0;
 
-    void invalidate() { _dirty = true; }
+    // Request a redraw. Cut for live updates (clock, animations), Fade when
+    // the screen switches to different content (e.g. ticker name -> price).
+    void invalidate(Compositor::Transition transition = Compositor::Transition::Cut)
+    {
+        _dirty = true;
+        if (transition == Compositor::Transition::Fade)
+            _dirtyFade = true;
+    }
 
     // Time since the state was entered.
     uint32_t shownMs() const { return millis() - _enteredMs; }
@@ -49,4 +56,5 @@ private:
     uint8_t _priority;
     uint32_t _enteredMs = 0;
     bool _dirty = false;
+    bool _dirtyFade = false;
 };

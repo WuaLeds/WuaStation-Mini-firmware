@@ -9,7 +9,7 @@
 //  and edited from the WiFi portal.
 // =============================================================================
 
-#define WUA_FIRMWARE_VERSION "1.0.0"
+#define WUA_FIRMWARE_VERSION "0.2"
 
 namespace Config
 {
@@ -61,6 +61,13 @@ namespace Config
     constexpr uint8_t kAlertLoops = 2;
     constexpr uint16_t kFadeMs = 300;            // crossfade between static screens
     constexpr uint16_t kFadeStepMs = 20;
+
+    // ---- Ticker: fixed pages per symbol, name -> price -> 24 h change ------
+    constexpr uint32_t kTickerNameMs = 1500;
+    constexpr uint32_t kTickerPriceMs = 3000;
+    constexpr uint32_t kTickerChangeMs = 2000;
+    constexpr uint32_t kTickerPanHoldMs = 700;   // a page wider than 18 px pans slowly
+    constexpr float kTickerPriceMaxError = 0.01f; // abbreviation ("97.2K") may round <= 1 %
 
     // ---- Alarm (visual only: the board has no buzzer) ----------------------
     constexpr uint32_t kAlarmRingMs = 60000;

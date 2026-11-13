@@ -5,6 +5,7 @@ void StaticStateBase::onEnter(WuaDisplay &display)
     (void)display;
     _enteredMs = millis();
     _dirty = false;
+    _dirtyFade = false;
     onShow();
     draw(Compositor::Transition::Fade);
 }
@@ -13,11 +14,14 @@ void StaticStateBase::onLoop(WuaDisplay &display)
 {
     (void)display;
     tick();
-    // Wait for the entry crossfade to finish: it still reads both frames.
+    // Wait for a running crossfade to finish: it still reads both frames.
     if (_dirty && !_compositor.busy())
     {
+        const Compositor::Transition transition =
+            _dirtyFade ? Compositor::Transition::Fade : Compositor::Transition::Cut;
         _dirty = false;
-        draw(Compositor::Transition::Cut);
+        _dirtyFade = false;
+        draw(transition);
     }
 }
 

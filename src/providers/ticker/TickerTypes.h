@@ -23,6 +23,7 @@ enum class QuoteStatus : uint8_t
 struct TickerQuote
 {
     char symbol[16]; // exchange symbol, e.g. "BTCUSDT"
+    char base[12];   // base asset, e.g. "BTC"
     char pair[20];   // display name, e.g. "BTC/USDT"
     double last;
     double open;

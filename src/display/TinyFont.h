@@ -9,8 +9,8 @@
 //  great for scrolling but too wide for static screens. TinyFont packs digits
 //  into 3 columns so "12:34", "21.11", "23°" or "45%" fit on one screen.
 //
-//  Supported: 0-9 : . - + % / space and the degree sign (TinyFont::kDegree).
-//  Unsupported characters are skipped.
+//  Supported: 0-9 A-Z : . - + % / space and the degree sign
+//  (TinyFont::kDegree). Unsupported characters are skipped.
 // =============================================================================
 namespace TinyFont
 {
