@@ -1,9 +1,15 @@
 """PlatformIO pre-build script: embed the settings web page in the firmware.
 
 web/settings.html is gzipped and written as a C array to
-src/web/SettingsPageData.h (generated, git-ignored). The file is only
-rewritten when its content changes, so unchanged pages do not trigger a
-recompile. Also runnable by hand: python tools/embed_web.py
+.pio/build/<env>/generated/SettingsPageData.h, which is added to the include
+path. Nothing is generated inside src/: PlatformIO fingerprints the files in
+src/ and wipes the build directory when that list changes, so a header that
+appears in src/ during the build would make the next pio command (e.g.
+`pio project metadata` in the release workflow) clean the fresh build.
+
+The header is only rewritten when its content changes, so an unchanged page
+does not trigger a recompile. Also runnable by hand to inspect the output:
+python tools/embed_web.py  (writes .pio/generated/SettingsPageData.h)
 """
 
 import gzip
@@ -12,11 +18,14 @@ import os
 try:
     Import("env")  # noqa: F821  (provided by PlatformIO/SCons)
     PROJECT_DIR = env.subst("$PROJECT_DIR")  # noqa: F821
+    OUT_DIR = os.path.join(env.subst("$BUILD_DIR"), "generated")  # noqa: F821
+    env.Append(CPPPATH=[OUT_DIR])  # noqa: F821
 except NameError:
     PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    OUT_DIR = os.path.join(PROJECT_DIR, ".pio", "generated")
 
 SOURCE = os.path.join(PROJECT_DIR, "web", "settings.html")
-TARGET = os.path.join(PROJECT_DIR, "src", "web", "SettingsPageData.h")
+TARGET = os.path.join(OUT_DIR, "SettingsPageData.h")
 
 
 def build_header(data: bytes) -> str:
@@ -44,7 +53,7 @@ def main():
         with open(TARGET, "r", encoding="utf-8") as f:
             old = f.read()
     if old != header:
-        os.makedirs(os.path.dirname(TARGET), exist_ok=True)
+        os.makedirs(OUT_DIR, exist_ok=True)
         with open(TARGET, "w", encoding="utf-8", newline="\n") as f:
             f.write(header)
         print("embed_web: wrote %s" % os.path.relpath(TARGET, PROJECT_DIR))

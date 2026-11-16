@@ -7,8 +7,5 @@
 !.vscode/extensions.json
 .claude/
 
-# Generated from web/settings.html by tools/embed_web.py
-src/web/SettingsPageData.h
-
 # Convenience copies of the firmware image for drag-and-drop flashing
 *.uf2

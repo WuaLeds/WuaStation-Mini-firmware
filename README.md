@@ -133,7 +133,8 @@ live in the `CITIES` table of `web/settings.html`; each one's geocoding query
 
 The page source is [`web/settings.html`](web/settings.html) (plain HTML, CSS
 and JS, no build step). [`tools/embed_web.py`](tools/embed_web.py) runs before
-every build and embeds it gzipped (~12 KB) as `src/web/SettingsPageData.h`;
+every build and embeds it gzipped (~12 KB) as `SettingsPageData.h`, generated
+inside the build directory (`.pio/build/<env>/generated/`, never in `src/`);
 [`src/web/SettingsServer`](src/web/SettingsServer.h) serves it plus a small
 JSON API (`/api/settings`, `/api/status`, `/api/brightness`, `/api/restart`).
 The rotation is stored as `time:10,date:4,-weather,ticker:9,...` (display
@@ -203,8 +204,7 @@ src/
 │   └── sensors/             SensorManager + SHT4x, SHT3x, AHT2x, BME280 drivers
 ├── states/                  DisplayController, base classes (Static / Paged / ScrollText)
 │                            + one file per screen
-├── web/                     SettingsServer (settings page + JSON API),
-│                            SettingsPageData.h (generated, git-ignored)
+├── web/                     SettingsServer (settings page + JSON API)
 └── bench/                   FPS benchmark
 web/settings.html            settings page source (embedded at build time)
 tools/                       embed_web.py (pre-build), release_assets.py (release workflow)
