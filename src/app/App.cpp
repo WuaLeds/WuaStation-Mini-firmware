@@ -3,6 +3,7 @@
 #include "board/Board.h"
 #include "board/Pins.h"
 #include "config/Config.h"
+#include "config/ScreenConfig.h"
 #include "config/Strings.h"
 #include "config/Theme.h"
 #include "core/Logger.h"
@@ -18,6 +19,7 @@ namespace
 App::App()
     : _compositor(_display),
       _controller(_display, _compositor),
+      _web(_settings, _wifi, _time, _sensors),
       _btnUp(Pins::kButtonUp, false, INPUT_PULLUP),
       _btnDown(Pins::kButtonDown, false, INPUT_PULLUP),
       _btnTouch(Pins::kTouch, true, INPUT),
@@ -26,10 +28,12 @@ App::App()
       _timeState(_compositor, _time),
       _dateState(_compositor, _time),
       _weatherState(_compositor, _weather),
+      _forecastState(_compositor, _weather),
       _indoorState(_compositor, _sensors),
       _tickerState(_compositor, _ticker),
       _messageState(_compositor, _settings),
       _celebrationState(_compositor, _time, kCelebrationDate),
+      _timerState(_compositor),
       _portalState(_compositor, _wifi),
       _alertState(_compositor),
       _alarmState(_compositor, _time, _settings)
@@ -71,13 +75,14 @@ void App::setup()
     checkFactoryReset();
 
     // Clock and data sources (configured once; settings changes restart)
-    _time.begin(s.timezone);
+    _time.begin(s.timezone, _settings.locationZone());
     _ticker.configure(s.tickers);
     float lat = 0.0f, lon = 0.0f;
     const bool hasCoords = _settings.coordinates(lat, lon);
-    _weather.configure(s.city, hasCoords, lat, lon);
+    _weather.configure(s.city, hasCoords, lat, lon, s.europeanAqi);
     _net.add(&_ticker);
     _net.add(&_weather);
+    _sensors.setTemperatureOffset(s.tempOffsetC);
     _sensors.begin();
 
     registerStates();
@@ -85,8 +90,15 @@ void App::setup()
 
     // WiFi last: it may open the portal right away
     _wifi.onConnected([this]() { _time.startSync(); });
-    _wifi.onSettingsSaved([this]() { onSettingsSaved(); });
-    _wifi.begin(_settings);
+    _web.begin({
+        [this]() {
+            _alertState.push(Strings::kSettingsSaved, Theme::kInfo, 1);
+            restartSoon(Config::kRestartDelayMs);
+        },
+        [this](uint8_t level) { applyBrightness(level); },
+        [this]() { restartSoon(Config::kRestartNowDelayMs); },
+    });
+    _wifi.begin();
     _net.begin();
 
     if (!_time.timezoneKnown())
@@ -99,18 +111,44 @@ void App::setup()
     LOG_INFO("Setup done, free heap %u", ESP.getFreeHeap());
 }
 
+IDisplayStateProvider *App::screen(ScreenId id)
+{
+    switch (id)
+    {
+    case ScreenId::Time: return &_timeState;
+    case ScreenId::Date: return &_dateState;
+    case ScreenId::Weather: return &_weatherState;
+    case ScreenId::Forecast: return &_forecastState;
+    case ScreenId::Indoor: return &_indoorState;
+    case ScreenId::Ticker: return &_tickerState;
+    case ScreenId::Message: return &_messageState;
+    case ScreenId::Celebration: return &_celebrationState;
+    case ScreenId::Timer: return &_timerState;
+    case ScreenId::Count: break;
+    }
+    return nullptr;
+}
+
 void App::registerStates()
 {
-    // Rotation, in display order. States without data are skipped.
+    // System screens first: boot greeting and connection status.
     _controller.addState(&_splashState);
     _controller.addState(&_statusState);
-    _controller.addState(&_timeState);
-    _controller.addState(&_dateState);
-    _controller.addState(&_weatherState);
-    _controller.addState(&_indoorState);
-    _controller.addState(&_tickerState);
-    _controller.addState(&_messageState);
-    _controller.addState(&_celebrationState);
+
+    // User rotation from the settings page, in its order. Screens without
+    // data are skipped at runtime; hidden or unlisted screens are never shown.
+    ScreenSlot slots[ScreenConfig::kMaxSlots];
+    const uint8_t count = ScreenConfig::parse(_settings.get().screens, slots);
+    for (uint8_t i = 0; i < count; ++i)
+    {
+        IDisplayStateProvider *state = screen(slots[i].id);
+        if (!state || !slots[i].enabled)
+            continue;
+        if (slots[i].seconds > 0)
+            state->setDurationMs(static_cast<uint32_t>(slots[i].seconds) * 1000UL);
+        _controller.addState(state);
+        LOG_INFO("Screen %u: %s%s", i + 1, ScreenConfig::name(slots[i].id), slots[i].seconds ? "" : " (default time)");
+    }
 
     // Interrupt screens (priority > 0).
     _controller.addState(&_portalState);
@@ -217,10 +255,22 @@ void App::handleButton(ButtonId id, ButtonEvent event)
 void App::stepBrightness()
 {
     _brightnessIndex = (_brightnessIndex + 1) % kBrightnessLevelCount;
-    const uint8_t level = Config::kBrightnessLevels[_brightnessIndex];
+    applyBrightness(Config::kBrightnessLevels[_brightnessIndex]);
+}
+
+void App::applyBrightness(uint8_t level)
+{
     _display.setBrightness(level);
     _display.flush(); // FastLED applies the scale on the next show()
     _settings.setBrightnessDeferred(level);
+
+    // Keep the button steps in sync: next click goes to the step above.
+    _brightnessIndex = 0;
+    for (uint8_t i = 0; i < kBrightnessLevelCount; ++i)
+    {
+        if (Config::kBrightnessLevels[i] <= level)
+            _brightnessIndex = i;
+    }
     LOG_INFO("Brightness %u", level);
 }
 
@@ -239,15 +289,26 @@ void App::showInfo()
     }
 }
 
-void App::onSettingsSaved()
+void App::restartSoon(uint32_t delayMs)
 {
-    _alertState.push(Strings::kSettingsSaved, Theme::kInfo, 1);
-    _restartAtMs = millis() + Config::kRestartDelayMs;
+    _restartAtMs = millis() + delayMs;
+    if (_restartAtMs == 0)
+        _restartAtMs = 1; // 0 means "no restart pending"
 }
 
 void App::handleSystemEvents()
 {
     char buf[64];
+
+    // Timezone "auto": follow the zone reported for the weather location.
+    if (_time.isAuto() && _weather.version() != _weatherZoneVersion)
+    {
+        WeatherData weather;
+        _weatherZoneVersion = _weather.read(weather);
+        if (weather.valid && weather.hasTimezone &&
+            _time.applyLocationZone(weather.zoneName, weather.utcOffsetS))
+            _settings.rememberLocationZone(_time.posixTimezone());
+    }
 
     if (_sensors.takeDetectedEvent())
     {

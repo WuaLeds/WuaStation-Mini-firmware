@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>WuaStation · Wualeds</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 102 158'%3E%3Cdefs%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='102' y2='158'%3E%3Cstop offset='0' stop-color='%23e8348c'/%3E%3Cstop offset='.5' stop-color='%23f6604a'/%3E%3Cstop offset='1' stop-color='%23fb8b24'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='url(%23g)'%3E%3Cpath d='M10 92V51a41 41 0 0 1 82 0v41H76V51a25 25 0 0 0-50 0v41z'/%3E%3Crect x='2' y='90' width='98' height='15' rx='1.5'/%3E%3Crect x='26' y='104' width='18' height='51' rx='1.5'/%3E%3Crect x='60' y='104' width='16' height='43' rx='1.5'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+/* Wualeds design tokens (wualeds.com) */
+:root{
+  --brand-pink:#e8348c;--brand-magenta:#f0466a;--brand-coral:#f6604a;--brand-orange:#fb8b24;--brand-amber:#ffa830;
+  --gradient-brand:linear-gradient(135deg,var(--brand-pink) 0%,var(--brand-coral) 50%,var(--brand-orange) 100%);
+  --gradient-brand-soft:linear-gradient(135deg,rgba(232,52,140,.12),rgba(251,139,36,.12));
+  --font-sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"SFMono-Regular","JetBrains Mono",Consolas,monospace;
+  --radius-sm:8px;--radius:16px;--radius-lg:24px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04);
+  --bg:#fbf9fb;--bg-elevated:#fff;--bg-subtle:#f4eef3;--surface:#fff;--surface-2:#faf6f9;
+  --border:#eadfe8;--border-strong:#ddccd9;--text:#1c121b;--text-muted:#6b5d68;--text-faint:#968a93;
+  --accent:var(--brand-magenta);--on-brand:#fff;--ok:#1f9d55;--err:#d93a3a;
+  --shadow-brand:0 12px 40px rgba(232,52,140,.18);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e0a0e;--bg-elevated:#171015;--bg-subtle:#1c141b;--surface:#181118;--surface-2:#201620;
+  --border:#2c1f2a;--border-strong:#3a2a37;--text:#f6eef4;--text-muted:#b6a3b1;--text-faint:#7e6c7a;
+  --accent:var(--brand-coral);--ok:#3ccf7c;--err:#ff6b6b;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3);
+  --shadow-brand:0 12px 48px rgba(246,96,74,.28);
+  color-scheme:dark;
+}}
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:96px}
+h1,h2,h3{line-height:1.15;font-weight:800;letter-spacing:-.02em}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+svg{display:block}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(180%) blur(12px);-webkit-backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--border)}
+.top .wrap{display:flex;align-items:center;gap:12px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand svg{width:22px;height:34px}
+.brand b{font-size:1.25rem;font-weight:800;letter-spacing:-.02em}
+.top .grow{flex:1}
+.lang{display:flex;border:1px solid var(--border);border-radius:999px;padding:3px;background:var(--surface)}
+.lang button{border:0;background:none;padding:4px 10px;border-radius:999px;font-size:.8rem;font-weight:700;color:var(--text-muted)}
+.lang button[aria-pressed=true]{background:var(--gradient-brand);color:var(--on-brand)}
+
+/* hero */
+.hero{margin:24px 0 16px;padding:24px;border-radius:var(--radius-lg);background:var(--gradient-brand-soft);border:1px solid var(--border);position:relative;overflow:hidden}
+.hero h1{font-size:clamp(1.6rem,5vw,2.2rem)}
+.hero h1 span{background:var(--gradient-brand);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--text-muted);margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin-top:18px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;min-width:0}
+.stat small{display:block;color:var(--text-faint);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.stat span{display:block;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:6px;vertical-align:middle}
+.dot.off{background:var(--text-faint)}
+
+/* cards */
+.card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:20px;margin-bottom:16px}
+.card h2{font-size:1.15rem;display:flex;align-items:center;gap:10px}
+.card h2 i{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--gradient-brand);color:var(--on-brand);font-style:normal}
+.card h2 i svg{width:17px;height:17px}
+.card>p.hint{color:var(--text-muted);font-size:.9rem;margin:6px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>span{font-weight:600;font-size:.9rem}
+.field small{color:var(--text-faint);font-size:.8rem}
+.field.bad input{border-color:var(--err)}
+.field.bad small{color:var(--err)}
+input[type=text],input[type=number],input[type=time],select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);background:var(--surface-2);min-height:42px}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+[hidden]{display:none!important}
+.field .custom{margin-top:8px}
+details{margin-top:14px}
+summary{cursor:pointer;color:var(--text-muted);font-weight:600;font-size:.9rem}
+details .grid{margin-top:12px}
+
+/* switch */
+.switch{position:relative;display:inline-block;width:44px;height:26px;flex:none}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1}
+.switch span{position:absolute;inset:0;border-radius:999px;background:var(--border-strong);transition:background .2s}
+.switch span::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch input:checked+span{background:var(--gradient-brand)}
+.switch input:checked+span::after{transform:translateX(18px)}
+.switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;align-items:center;gap:12px}
+
+/* screens */
+.screens{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+.screen{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);transition:opacity .2s,border-color .2s}
+.screen.off{opacity:.55}
+.screen.off .dur{visibility:hidden}
+.order{display:flex;flex-direction:column;gap:2px}
+.icon{display:grid;place-items:center;width:28px;height:20px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text-muted);padding:0}
+.icon:disabled{opacity:.3;cursor:default}
+.icon svg{width:14px;height:14px}
+.info{flex:1;min-width:0}
+.info strong{display:block;font-size:.95rem}
+.info small{display:block;color:var(--text-muted);font-size:.8rem;overflow:hidden;text-overflow:ellipsis}
+.dur{display:flex;align-items:center;gap:6px;flex:none}
+.dur input{width:66px;text-align:right;padding:8px;min-height:36px}
+.dur span{color:var(--text-faint);font-size:.8rem;min-width:30px;line-height:1.1}
+.badge{display:inline-block;font-size:.68rem;font-weight:700;color:var(--accent);margin-left:6px;text-transform:uppercase;letter-spacing:.05em}
+
+/* range */
+input[type=range]{width:100%;accent-color:var(--brand-coral);height:28px}
+.range-row{display:flex;align-items:center;gap:14px}
+.range-row output{font-variant-numeric:tabular-nums;font-weight:700;min-width:3ch;text-align:right}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:999px;font-weight:700;border:1px solid transparent;text-decoration:none;min-height:44px}
+.btn-primary{background:var(--gradient-brand);color:var(--on-brand);box-shadow:var(--shadow-brand)}
+.btn-primary:disabled{opacity:.45;box-shadow:none;cursor:default}
+.btn-ghost{background:var(--surface);border-color:var(--border-strong)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+
+/* save bar */
+.savebar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--bg-elevated) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--border);transform:translateY(100%);transition:transform .25s}
+.savebar.show{transform:none}
+.savebar .wrap{display:flex;align-items:center;gap:12px;padding-top:12px;padding-bottom:12px}
+.savebar p{flex:1;color:var(--text-muted);font-size:.9rem}
+.savebar p.err{color:var(--err)}
+
+/* overlay */
+.overlay{position:fixed;inset:0;z-index:40;display:none;place-items:center;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-align:center;padding:24px}
+.overlay.show{display:grid}
+.overlay h3{font-size:1.4rem;margin:18px 0 6px}
+.overlay p{color:var(--text-muted);max-width:340px}
+.spinner{width:44px;height:44px;margin:0 auto;border-radius:50%;background:conic-gradient(from 0deg,transparent,var(--brand-pink),var(--brand-orange));-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 0);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation-duration:3s}*{transition:none!important}}
+
+footer{color:var(--text-faint);font-size:.85rem;text-align:center;padding:12px 0 24px}
+footer a{color:var(--text-muted)}
+.loading main{opacity:.4;pointer-events:none}
+.banner{display:none;margin-top:16px;padding:12px 14px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);font-size:.9rem}
+.banner.show{display:block}
+
+@media (max-width:480px){
+  .hero{padding:20px}
+  .card{padding:16px}
+  .screen{gap:10px;padding:10px}
+  .dur input{width:56px}
+}
+</style>
+</head>
+<body class="loading">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="wl-grad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="102" y2="158">
+      <stop offset="0" stop-color="#e8348c"/><stop offset=".5" stop-color="#f6604a"/><stop offset="1" stop-color="#fb8b24"/>
+    </linearGradient>
+    <symbol id="wl-logo" viewBox="0 0 102 158">
+      <g fill="url(#wl-grad)">
+        <path d="M10 92V51a41 41 0 0 1 82 0v41H76V51a25 25 0 0 0-50 0v41z"/>
+        <rect x="2" y="90" width="98" height="15" rx="1.5"/>
+        <rect x="26" y="104" width="18" height="51" rx="1.5"/>
+        <rect x="60" y="104" width="16" height="43" rx="1.5"/>
+      </g>
+    </symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-screens" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5" cy="9" r="1.6"/><circle cx="9.6" cy="9" r="1.6"/><circle cx="14.4" cy="9" r="1.6"/><circle cx="19" cy="9" r="1.6"/><circle cx="5" cy="15" r="1.6"/><circle cx="9.6" cy="15" r="1.6"/><circle cx="14.4" cy="15" r="1.6"/><circle cx="19" cy="15" r="1.6"/></g></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="9.5" r="2.4" fill="currentColor"/></symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24"><path d="M4 17l5-5 4 4 7-8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5h4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="https://wualeds.com" target="_blank" rel="noopener" aria-label="Wualeds">
+      <svg aria-hidden="true"><use href="#wl-logo"/></svg><b>Wualeds</b>
+    </a>
+    <div class="grow"></div>
+    <div class="lang" role="group" aria-label="Idioma / Language">
+      <button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>WuaStation <span>mini</span></h1>
+    <p data-i="heroText"></p>
+    <div class="stats">
+      <div class="stat"><small data-i="stClock"></small><span id="st-clock">–</span></div>
+      <div class="stat"><small>WiFi</small><span id="st-wifi">–</span></div>
+      <div class="stat"><small data-i="stAddr"></small><span id="st-ip">–</span></div>
+      <div class="stat"><small data-i="stSensor"></small><span id="st-sensor">–</span></div>
+    </div>
+    <div class="banner" id="portal-banner"><span data-i="portalBanner"></span> <a href="/wifi" data-i="wifiSetup"></a></div>
+  </section>
+
+  <section class="card">
+    <h2><i><svg><use href="#i-screens"/></svg></i><span data-i="screensTitle"></span></h2>
+    <p class="hint" data-i="screensHint"></p>
+    <ol class="screens" id="screen-list"></ol>
+  </section>
+
+  <section class="card">
+    <h2><i><svg><use href="#i-pin"/></svg></i><span data-i="placeTitle"></span></h2>
+    <p class="hint" data-i="placeHint"></p>
+    <div class="grid">
+      <div class="field">
+        <span id="l-city" data-i="city"></span>
+        <select id="city-sel" aria-labelledby="l-city"></select>
+        <input type="text" id="city" class="custom" maxlength="47" autocomplete="off" placeholder="Rosario,AR" aria-labelledby="l-city" hidden>
+        <small data-i="cityHint"></small>
+      </div>
+      <div class="field" id="f-tz">
+        <span id="l-tz" data-i="tz"></span>
+        <select id="tz-sel" aria-labelledby="l-tz"></select>
+        <input type="text" id="tz" class="custom" maxlength="47" autocomplete="off" placeholder="Europe/Madrid · &lt;-03&gt;3" aria-labelledby="l-tz" hidden>
+        <small data-i="tzHint"></small>
+      </div>
+    </div>
+    <details>
+      <summary data-i="advanced"></summary>
+      <div class="grid">
+        <label class="field" id="f-lat"><span data-i="lat"></span><input type="text" id="lat" maxlength="15" inputmode="decimal" placeholder="-34.6037"></label>
+        <label class="field" id="f-lon"><span data-i="lon"></span><input type="text" id="lon" maxlength="15" inputmode="decimal" placeholder="-58.3816"><small data-i="coordHint"></small></label>
+        <label class="field"><span data-i="aq"></span><select id="aq"><option value="us" data-i="aqUs"></option><option value="eu" data-i="aqEu"></option></select></label>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2><i><svg><use href="#i-coin"/></svg></i><span>Ticker</span></h2>
+    <p class="hint" data-i="tickerHint"></p>
+    <label class="field" id="f-tickers"><span data-i="tickers"></span><input type="text" id="tickers" maxlength="63" autocomplete="off" autocapitalize="characters" placeholder="BTCUSDT, ETHUSDT"><small data-i="tickersHint"></small></label>
+  </section>
+
+  <section class="card">
+    <h2><i><svg><use href="#i-bell"/></svg></i><span data-i="alarmTitle"></span></h2>
+    <div class="grid" style="margin-top:14px">
+      <div class="field" id="f-alarm">
+        <span data-i="alarm"></span>
+        <div class="row">
+          <label class="switch"><input type="checkbox" id="alarm-on"><span></span></label>
+          <input type="time" id="alarm" value="07:30" style="max-width:160px">
+        </div>
+        <small data-i="alarmHint"></small>
+      </div>
+      <label class="field"><span data-i="msg"></span><input type="text" id="msg" maxlength="127" autocomplete="off"><small data-i="msgHint"></small></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><i><svg><use href="#i-sun"/></svg></i><span data-i="displayTitle"></span></h2>
+    <div class="grid" style="margin-top:14px">
+      <div class="field">
+        <span data-i="bright"></span>
+        <div class="range-row"><input type="range" id="bright" min="1" max="255"><output id="bright-out">32</output></div>
+        <small data-i="brightHint"></small>
+      </div>
+      <label class="field" id="f-toff"><span data-i="toff"></span><input type="number" id="toff" min="-10" max="10" step="0.1" inputmode="decimal"><small data-i="toffHint"></small></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><i><svg><use href="#i-chip"/></svg></i><span data-i="deviceTitle"></span></h2>
+    <div class="stats">
+      <div class="stat"><small data-i="firmware"></small><span id="st-fw">–</span></div>
+      <div class="stat"><small>Host</small><span id="st-host">–</span></div>
+      <div class="stat"><small data-i="uptime"></small><span id="st-up">–</span></div>
+    </div>
+    <div class="actions">
+      <a class="btn btn-ghost" href="/wifi" data-i="wifiSetup"></a>
+      <button type="button" class="btn btn-ghost" id="restart" data-i="restart"></button>
+    </div>
+  </section>
+</main>
+
+<footer><a href="https://wualeds.com" target="_blank" rel="noopener">wualeds.com</a></footer>
+
+<div class="savebar" id="savebar">
+  <div class="wrap">
+    <p id="save-msg" data-i="unsaved"></p>
+    <button type="button" class="btn btn-ghost" id="discard" data-i="discard"></button>
+    <button type="button" class="btn btn-primary" id="save" data-i="save"></button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" role="status" aria-live="polite">
+  <div><div class="spinner"></div><h3 id="ov-title"></h3><p id="ov-text"></p></div>
+</div>
+
+<script>
+"use strict";
+const I18N = {
+  es: {
+    heroText: "Configurá qué muestra tu estación, en qué orden y por cuánto tiempo.",
+    stClock: "Hora del equipo", stAddr: "Dirección", stSensor: "Sensor",
+    portalBanner: "Modo configuración: la estación todavía no está conectada a tu WiFi.",
+    screensTitle: "Pantallas",
+    screensHint: "Activá las que quieras ver, ordenalas con las flechas y elegí cuántos segundos dura cada una (vacío = valor por defecto). Las que no tienen datos se saltan solas.",
+    s_time: "Hora", d_time: "HH:MM con los dos puntos titilando",
+    s_date: "Fecha", d_date: "Día y mes",
+    s_weather: "Clima", d_weather: "Temperatura y humedad de la ciudad",
+    s_forecast: "Pronóstico", d_forecast: "Máx./mín., lluvia, UV y calidad del aire",
+    s_indoor: "Interior", d_indoor: "Temperatura y humedad del sensor",
+    s_ticker: "Ticker", d_ticker: "Precio y variación 24 h de cada par",
+    s_message: "Mensaje", d_message: "Tu texto personalizado",
+    s_celebration: "Celebración", d_celebration: "Mensaje del aniversario mensual",
+    s_timer: "Temporizador", d_timer: "Cuenta regresiva y pomodoro (botón DOWN)",
+    sec: "s", perSymbol: "s/par", auto: "auto", up: "Subir", down: "Bajar", show: "Mostrar",
+    placeTitle: "Ubicación y hora", placeHint: "La ciudad se usa para el clima y, con la zona horaria automática, también para la hora.",
+    city: "Ciudad", cityHint: "Elegí una de la lista, u «Otra ciudad…» para escribirla (ej.: Rosario,AR).",
+    tz: "Zona horaria", tzHint: "«Automática» usa la zona horaria de la ciudad elegida.",
+    cityOther: "Otra ciudad…", tzAuto: "Automática (la de la ciudad)", tzOther: "Otra zona…",
+    r_am: "América", r_eu: "Europa", r_af: "África", r_as: "Asia", r_oc: "Oceanía", r_other: "Otras",
+    advanced: "Opciones avanzadas", lat: "Latitud", lon: "Longitud", coordHint: "Opcional: reemplaza a la ciudad",
+    aq: "Calidad del aire", aqUs: "Índice de EE. UU. (0–500)", aqEu: "Índice europeo (0–100+)",
+    tickerHint: "Pares de Binance que se muestran con su precio y variación.",
+    tickers: "Pares", tickersHint: "Hasta 4, separados por coma. Vacío oculta el ticker.",
+    alarmTitle: "Alarma y mensaje", alarm: "Alarma diaria", alarmHint: "La pantalla parpadea a esa hora (sin sonido)",
+    msg: "Mensaje", msgHint: "Texto que se desplaza en la pantalla. Vacío lo oculta.",
+    displayTitle: "Pantalla y sensor", bright: "Brillo", brightHint: "Se aplica al instante",
+    toff: "Ajuste de temperatura (°C)", toffHint: "Corrige el calor de la carcasa, ej.: -1.5",
+    deviceTitle: "Equipo", firmware: "Firmware", uptime: "Encendido", wifiSetup: "Configurar WiFi", restart: "Reiniciar",
+    unsaved: "Tenés cambios sin guardar", discard: "Descartar", save: "Guardar",
+    saving: "Guardando…", saveFail: "No se pudo guardar. Revisá la conexión.",
+    savedTitle: "Guardado", savedText: "La estación se está reiniciando para aplicar los cambios. Esta página se recarga sola.",
+    restartTitle: "Reiniciando", restartConfirm: "¿Reiniciar la estación?",
+    portalText: "Si estabas conectado al WiFi de la estación, volvé a conectarte a ella.",
+    loadFail: "No se pudo leer la configuración.",
+    errTickers: "Solo letras y números, hasta 4 pares", errCoord: "Latitud -90…90 y longitud -180…180, las dos juntas",
+    errSeconds: "Entre 1 y {max} segundos", errNoScreens: "Activá al menos una pantalla",
+    notSynced: "sin sincronizar", noSensor: "no detectado", offline: "sin conexión",
+    leave: "Hay cambios sin guardar."
+  },
+  en: {
+    heroText: "Choose what your station shows, in which order and for how long.",
+    stClock: "Device time", stAddr: "Address", stSensor: "Sensor",
+    portalBanner: "Setup mode: the station is not connected to your WiFi yet.",
+    screensTitle: "Screens",
+    screensHint: "Turn on the ones you want, sort them with the arrows and set how many seconds each one lasts (empty = default). Screens without data are skipped automatically.",
+    s_time: "Time", d_time: "HH:MM with a blinking colon",
+    s_date: "Date", d_date: "Day and month",
+    s_weather: "Weather", d_weather: "City temperature and humidity",
+    s_forecast: "Forecast", d_forecast: "High/low, rain, UV and air quality",
+    s_indoor: "Indoor", d_indoor: "Sensor temperature and humidity",
+    s_ticker: "Ticker", d_ticker: "Price and 24 h change of each pair",
+    s_message: "Message", d_message: "Your custom text",
+    s_celebration: "Celebration", d_celebration: "Monthly anniversary message",
+    s_timer: "Timer", d_timer: "Countdown and pomodoro (DOWN button)",
+    sec: "s", perSymbol: "s/pair", auto: "auto", up: "Move up", down: "Move down", show: "Show",
+    placeTitle: "Location and time", placeHint: "The city drives the weather and, with the automatic timezone, the clock as well.",
+    city: "City", cityHint: "Pick one from the list, or “Other city…” to type it (e.g. Rosario,AR).",
+    tz: "Timezone", tzHint: "“Automatic” uses the timezone of the chosen city.",
+    cityOther: "Other city…", tzAuto: "Automatic (the city's)", tzOther: "Other zone…",
+    r_am: "Americas", r_eu: "Europe", r_af: "Africa", r_as: "Asia", r_oc: "Oceania", r_other: "Other",
+    advanced: "Advanced options", lat: "Latitude", lon: "Longitude", coordHint: "Optional: overrides the city",
+    aq: "Air quality", aqUs: "US index (0–500)", aqEu: "European index (0–100+)",
+    tickerHint: "Binance pairs shown with their price and change.",
+    tickers: "Pairs", tickersHint: "Up to 4, comma separated. Empty hides the ticker.",
+    alarmTitle: "Alarm and message", alarm: "Daily alarm", alarmHint: "The display flashes at that time (no sound)",
+    msg: "Message", msgHint: "Text that scrolls on the display. Empty hides it.",
+    displayTitle: "Display and sensor", bright: "Brightness", brightHint: "Applied instantly",
+    toff: "Temperature offset (°C)", toffHint: "Compensates enclosure heat, e.g. -1.5",
+    deviceTitle: "Device", firmware: "Firmware", uptime: "Uptime", wifiSetup: "WiFi setup", restart: "Restart",
+    unsaved: "You have unsaved changes", discard: "Discard", save: "Save",
+    saving: "Saving…", saveFail: "Could not save. Check the connection.",
+    savedTitle: "Saved", savedText: "The station is restarting to apply the changes. This page reloads by itself.",
+    restartTitle: "Restarting", restartConfirm: "Restart the station?",
+    portalText: "If you were on the station's own WiFi, join it again.",
+    loadFail: "Could not read the settings.",
+    errTickers: "Letters and digits only, up to 4 pairs", errCoord: "Latitude -90…90 and longitude -180…180, both together",
+    errSeconds: "Between 1 and {max} seconds", errNoScreens: "Turn on at least one screen",
+    notSynced: "not synced", noSensor: "not detected", offline: "offline",
+    leave: "There are unsaved changes."
+  }
+};
+
+const $ = (s) => document.querySelector(s);
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+let lang = store.get("wl-lang") || ((navigator.language || "es").slice(0, 2) === "en" ? "en" : "es");
+const t = (k) => (I18N[lang] && I18N[lang][k]) || I18N.es[k] || k;
+
+let cfg = null;      // last settings read from the device
+let screens = [];    // working copy: {id, on, s, def, unit}
+let initial = "";
+let busy = false;
+
+// Preset cities: region, Spanish name, English name, geocoding query
+// ("Name,CC", checked against Open-Meteo), IANA timezone.
+const CITIES = [
+  ["am", "Buenos Aires", "Buenos Aires", "Buenos Aires,AR", "America/Argentina/Buenos_Aires"],
+  ["am", "Córdoba (Argentina)", "Córdoba (Argentina)", "Cordoba,AR", "America/Argentina/Cordoba"],
+  ["am", "Montevideo", "Montevideo", "Montevideo,UY", "America/Montevideo"],
+  ["am", "Santiago de Chile", "Santiago (Chile)", "Santiago,CL", "America/Santiago"],
+  ["am", "São Paulo", "São Paulo", "Sao Paulo,BR", "America/Sao_Paulo"],
+  ["am", "Río de Janeiro", "Rio de Janeiro", "Rio de Janeiro,BR", "America/Sao_Paulo"],
+  ["am", "Asunción", "Asunción", "Asuncion,PY", "America/Asuncion"],
+  ["am", "La Paz", "La Paz", "La Paz,BO", "America/La_Paz"],
+  ["am", "Lima", "Lima", "Lima,PE", "America/Lima"],
+  ["am", "Bogotá", "Bogotá", "Bogota,CO", "America/Bogota"],
+  ["am", "Quito", "Quito", "Quito,EC", "America/Guayaquil"],
+  ["am", "Caracas", "Caracas", "Caracas,VE", "America/Caracas"],
+  ["am", "Panamá", "Panama City", "Panama,PA", "America/Panama"],
+  ["am", "San José (Costa Rica)", "San José (Costa Rica)", "San Jose,CR", "America/Costa_Rica"],
+  ["am", "Ciudad de México", "Mexico City", "Mexico City,MX", "America/Mexico_City"],
+  ["am", "Miami", "Miami", "Miami,US", "America/New_York"],
+  ["am", "Nueva York", "New York", "New York,US", "America/New_York"],
+  ["am", "Toronto", "Toronto", "Toronto,CA", "America/Toronto"],
+  ["am", "Chicago", "Chicago", "Chicago,US", "America/Chicago"],
+  ["am", "Denver", "Denver", "Denver,US", "America/Denver"],
+  ["am", "Los Ángeles", "Los Angeles", "Los Angeles,US", "America/Los_Angeles"],
+  ["am", "Vancouver", "Vancouver", "Vancouver,CA", "America/Vancouver"],
+  ["am", "Honolulu", "Honolulu", "Honolulu,US", "Pacific/Honolulu"],
+  ["eu", "Madrid", "Madrid", "Madrid,ES", "Europe/Madrid"],
+  ["eu", "Barcelona", "Barcelona", "Barcelona,ES", "Europe/Madrid"],
+  ["eu", "Las Palmas (Canarias)", "Las Palmas (Canary Islands)", "Las Palmas,ES", "Atlantic/Canary"],
+  ["eu", "Lisboa", "Lisbon", "Lisbon,PT", "Europe/Lisbon"],
+  ["eu", "Londres", "London", "London,GB", "Europe/London"],
+  ["eu", "Dublín", "Dublin", "Dublin,IE", "Europe/Dublin"],
+  ["eu", "París", "Paris", "Paris,FR", "Europe/Paris"],
+  ["eu", "Bruselas", "Brussels", "Brussels,BE", "Europe/Brussels"],
+  ["eu", "Ámsterdam", "Amsterdam", "Amsterdam,NL", "Europe/Amsterdam"],
+  ["eu", "Berlín", "Berlin", "Berlin,DE", "Europe/Berlin"],
+  ["eu", "Zúrich", "Zurich", "Zurich,CH", "Europe/Zurich"],
+  ["eu", "Roma", "Rome", "Rome,IT", "Europe/Rome"],
+  ["eu", "Viena", "Vienna", "Vienna,AT", "Europe/Vienna"],
+  ["eu", "Estocolmo", "Stockholm", "Stockholm,SE", "Europe/Stockholm"],
+  ["eu", "Varsovia", "Warsaw", "Warsaw,PL", "Europe/Warsaw"],
+  ["eu", "Atenas", "Athens", "Athens,GR", "Europe/Athens"],
+  ["eu", "Kiev", "Kyiv", "Kyiv,UA", "Europe/Kyiv"],
+  ["eu", "Estambul", "Istanbul", "Istanbul,TR", "Europe/Istanbul"],
+  ["eu", "Moscú", "Moscow", "Moscow,RU", "Europe/Moscow"],
+  ["af", "Casablanca", "Casablanca", "Casablanca,MA", "Africa/Casablanca"],
+  ["af", "Lagos", "Lagos", "Lagos,NG", "Africa/Lagos"],
+  ["af", "El Cairo", "Cairo", "Cairo,EG", "Africa/Cairo"],
+  ["af", "Johannesburgo", "Johannesburg", "Johannesburg,ZA", "Africa/Johannesburg"],
+  ["af", "Nairobi", "Nairobi", "Nairobi,KE", "Africa/Nairobi"],
+  ["as", "Tel Aviv", "Tel Aviv", "Tel Aviv,IL", "Asia/Jerusalem"],
+  ["as", "Riad", "Riyadh", "Riyadh,SA", "Asia/Riyadh"],
+  ["as", "Dubái", "Dubai", "Dubai,AE", "Asia/Dubai"],
+  ["as", "Bombay", "Mumbai", "Mumbai,IN", "Asia/Kolkata"],
+  ["as", "Nueva Delhi", "New Delhi", "New Delhi,IN", "Asia/Kolkata"],
+  ["as", "Bangkok", "Bangkok", "Bangkok,TH", "Asia/Bangkok"],
+  ["as", "Yakarta", "Jakarta", "Jakarta,ID", "Asia/Jakarta"],
+  ["as", "Singapur", "Singapore", "Singapore,SG", "Asia/Singapore"],
+  ["as", "Hong Kong", "Hong Kong", "Hong Kong,HK", "Asia/Hong_Kong"],
+  ["as", "Shanghái", "Shanghai", "Shanghai,CN", "Asia/Shanghai"],
+  ["as", "Pekín", "Beijing", "Beijing,CN", "Asia/Shanghai"],
+  ["as", "Manila", "Manila", "Manila,PH", "Asia/Manila"],
+  ["as", "Seúl", "Seoul", "Seoul,KR", "Asia/Seoul"],
+  ["as", "Tokio", "Tokyo", "Tokyo,JP", "Asia/Tokyo"],
+  ["oc", "Perth", "Perth", "Perth,AU", "Australia/Perth"],
+  ["oc", "Brisbane", "Brisbane", "Brisbane,AU", "Australia/Brisbane"],
+  ["oc", "Sídney", "Sydney", "Sydney,AU", "Australia/Sydney"],
+  ["oc", "Melbourne", "Melbourne", "Melbourne,AU", "Australia/Melbourne"],
+  ["oc", "Auckland", "Auckland", "Auckland,NZ", "Pacific/Auckland"]
+];
+const REGIONS = ["am", "eu", "af", "as", "oc"];
+const CUSTOM = "__custom";
+
+const norm = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[\s_-]+/g, " ").trim();
+const cityName = (c) => (lang === "en" ? c[2] : c[1]);
+const byName = (a, b) => a.localeCompare(b, lang);
+
+// Current UTC offset from the browser's own timezone data ("UTC−3", "UTC+5:30").
+function utcOffset(tz) {
+  try {
+    const part = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "shortOffset" })
+      .formatToParts(new Date()).find((p) => p.type === "timeZoneName");
+    if (!part) return { label: "", minutes: 0 };
+    const m = /GMT([+-]\d+)(?::(\d+))?/.exec(part.value);
+    if (!m) return { label: "UTC", minutes: 0 };
+    const h = parseInt(m[1], 10), mm = parseInt(m[2] || "0", 10);
+    return { label: "UTC" + m[1].replace("-", "\u2212") + (m[2] ? ":" + m[2] : ""), minutes: h * 60 + (h < 0 ? -mm : mm) };
+  } catch (e) {
+    return { label: "", minutes: 0 };
+  }
+}
+
+function option(value, text) {
+  const o = document.createElement("option");
+  o.value = value;
+  o.textContent = text;
+  return o;
+}
+
+function buildPickers(cityValue, tzValue) {
+  const citySel = $("#city-sel"), tzSel = $("#tz-sel");
+  citySel.textContent = "";
+  tzSel.textContent = "";
+  const known = new Set(cfg ? cfg.zones : []); // zones the firmware can resolve
+
+  REGIONS.forEach((r) => {
+    const group = document.createElement("optgroup");
+    group.label = t("r_" + r);
+    CITIES.filter((c) => c[0] === r).sort((a, b) => byName(cityName(a), cityName(b)))
+      .forEach((c) => group.appendChild(option(c[3], cityName(c))));
+    citySel.appendChild(group);
+  });
+  citySel.appendChild(option(CUSTOM, t("cityOther")));
+
+  // One entry per zone, named after its preset cities, west to east.
+  tzSel.appendChild(option("auto", t("tzAuto")));
+  REGIONS.forEach((r) => {
+    const zones = new Map();
+    CITIES.filter((c) => c[0] === r && known.has(c[4])).forEach((c) => {
+      if (!zones.has(c[4])) zones.set(c[4], []);
+      zones.get(c[4]).push(cityName(c));
+    });
+    const items = Array.from(zones, ([tz, names]) => ({ tz, names: names.sort(byName), off: utcOffset(tz) }))
+      .sort((a, b) => a.off.minutes - b.off.minutes || byName(a.names[0], b.names[0]));
+    if (!items.length) return;
+    const group = document.createElement("optgroup");
+    group.label = t("r_" + r);
+    items.forEach((z) => group.appendChild(option(z.tz, (z.off.label ? z.off.label + " · " : "") + z.names.slice(0, 3).join(", "))));
+    tzSel.appendChild(group);
+  });
+  const other = document.createElement("optgroup");
+  other.label = t("r_other");
+  other.appendChild(option("UTC", "UTC"));
+  other.appendChild(option(CUSTOM, t("tzOther")));
+  tzSel.appendChild(other);
+
+  setCity(cityValue);
+  setTz(tzValue);
+}
+
+// "Buenos Aires", "buenos aires,ar", "Cordoba,AR" -> preset (or null).
+function findCity(value) {
+  const [name, cc] = String(value || "").split(",");
+  const n = norm(name), code = (cc || "").trim().toUpperCase();
+  if (!n) return null;
+  return CITIES.find((c) => {
+    const [gn, gc] = c[3].split(",");
+    return (norm(gn) === n || norm(c[1]) === n || norm(c[2]) === n) && (!code || code === gc);
+  }) || null;
+}
+
+// Stored timezone ("auto", "Buenos Aires", "Europe/Madrid"...) -> option value (or null).
+function findZone(value) {
+  const v = norm(value);
+  if (!v || v === "auto") return "auto";
+  if (v === "utc" || v === "etc/utc" || v === "utc0") return "UTC";
+  const zones = Array.from($("#tz-sel").options).map((o) => o.value).filter((z) => z.includes("/"));
+  const direct = zones.find((z) => norm(z) === v || norm(z.split("/").pop()) === v);
+  if (direct) return direct;
+  const c = CITIES.find((x) => norm(x[1]) === v || norm(x[2]) === v || norm(x[3].split(",")[0]) === v);
+  return c && zones.includes(c[4]) ? c[4] : null;
+}
+
+function setCity(value) {
+  const c = findCity(value);
+  $("#city-sel").value = c ? c[3] : CUSTOM;
+  $("#city").value = c ? "" : value;
+  syncCustom();
+}
+
+function setTz(value) {
+  const z = findZone(value);
+  $("#tz-sel").value = z || CUSTOM;
+  $("#tz").value = z ? "" : value;
+  syncCustom();
+}
+
+function syncCustom() {
+  $("#city").hidden = $("#city-sel").value !== CUSTOM;
+  $("#tz").hidden = $("#tz-sel").value !== CUSTOM;
+}
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i]").forEach((el) => { el.textContent = t(el.dataset.i); });
+  document.querySelectorAll(".lang button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+  if (cfg) {
+    const v = collect();
+    buildPickers(v.city, v.tz);
+    renderScreens();
+    renderStatus(cfg);
+    changed();
+  }
+}
+
+function fmtSeconds(def) { return def > 0 ? String(Math.round(def * 10) / 10) : t("auto"); }
+
+function renderScreens(focus) {
+  const list = $("#screen-list");
+  list.textContent = "";
+  screens.forEach((s, i) => {
+    const li = document.createElement("li");
+    li.className = "screen" + (s.on ? "" : " off");
+    li.innerHTML =
+      '<div class="order">' +
+        '<button type="button" class="icon" data-act="up"><svg><use href="#i-up"/></svg></button>' +
+        '<button type="button" class="icon" data-act="down"><svg><use href="#i-down"/></svg></button>' +
+      '</div>' +
+      '<label class="switch"><input type="checkbox"><span></span></label>' +
+      '<div class="info"><strong></strong><small></small></div>' +
+      '<label class="dur"><input type="number" inputmode="numeric" min="1"><span></span></label>';
+    const [up, down] = li.querySelectorAll(".icon");
+    up.disabled = i === 0; up.setAttribute("aria-label", t("up") + ": " + t("s_" + s.id));
+    down.disabled = i === screens.length - 1; down.setAttribute("aria-label", t("down") + ": " + t("s_" + s.id));
+    const toggle = li.querySelector(".switch input");
+    toggle.checked = s.on; toggle.setAttribute("aria-label", t("show") + ": " + t("s_" + s.id));
+    li.querySelector("strong").textContent = t("s_" + s.id);
+    li.querySelector("small").textContent = t("d_" + s.id);
+    const dur = li.querySelector(".dur input");
+    dur.max = cfg.maxSeconds; dur.value = s.s || ""; dur.placeholder = fmtSeconds(s.def);
+    dur.setAttribute("aria-label", t("s_" + s.id) + " (" + t("sec") + ")");
+    li.querySelector(".dur span").textContent = s.unit === "symbol" ? t("perSymbol") : t("sec");
+
+    const move = (delta) => {
+      const j = i + delta;
+      [screens[i], screens[j]] = [screens[j], screens[i]];
+      renderScreens({ index: j, act: delta < 0 ? "up" : "down" });
+      changed();
+    };
+    up.onclick = () => move(-1);
+    down.onclick = () => move(1);
+    toggle.onchange = () => { s.on = toggle.checked; li.classList.toggle("off", !s.on); changed(); };
+    dur.oninput = () => { const v = parseInt(dur.value, 10); s.s = v > 0 ? v : 0; changed(); };
+    list.appendChild(li);
+  });
+  if (focus) {
+    const li = list.children[focus.index];
+    let btn = li && li.querySelector('[data-act="' + focus.act + '"]');
+    if (btn && btn.disabled) btn = li.querySelector('[data-act="' + (focus.act === "up" ? "down" : "up") + '"]');
+    if (btn) btn.focus();
+  }
+}
+
+function renderStatus(st) {
+  $("#st-clock").textContent = st.clock || t("notSynced");
+  const wifi = $("#st-wifi");
+  wifi.textContent = "";
+  const dot = document.createElement("i");
+  dot.className = "dot" + (st.connected ? "" : " off");
+  wifi.append(dot, st.connected ? st.ssid + " · " + st.rssi + " dBm" : t("offline"));
+  $("#st-ip").textContent = st.ip;
+  let sensor = st.sensor || t("noSensor");
+  if (st.sensor && st.tempC !== null && st.tempC !== undefined) {
+    sensor += " · " + st.tempC.toFixed(1) + " °C";
+    if (st.humidity !== null && st.humidity !== undefined) sensor += " · " + st.humidity + " %";
+  }
+  $("#st-sensor").textContent = sensor;
+  $("#st-fw").textContent = "v" + st.version;
+  $("#st-host").textContent = st.hostname + ".local";
+  const up = st.uptime | 0;
+  const d = Math.floor(up / 86400), h = Math.floor(up % 86400 / 3600), m = Math.floor(up % 3600 / 60);
+  $("#st-up").textContent = (d ? d + "d " : "") + h + "h " + String(m).padStart(2, "0") + "m";
+  $("#portal-banner").classList.toggle("show", !!st.portal && !st.connected);
+}
+
+function fill(c) {
+  buildPickers(c.city, c.tz);
+  $("#lat").value = c.lat;
+  $("#lon").value = c.lon;
+  $("#aq").value = c.aqEu ? "eu" : "us";
+  $("#tickers").value = c.tickers.split(",").filter(Boolean).join(", ");
+  $("#alarm-on").checked = !!c.alarm;
+  $("#alarm").value = c.alarm || "07:30";
+  $("#alarm").disabled = !c.alarm;
+  $("#msg").value = c.msg;
+  $("#bright").value = c.bright;
+  $("#bright-out").textContent = c.bright;
+  $("#toff").value = c.tempOffset;
+  screens = c.screens.map((s) => Object.assign({}, s));
+  renderScreens();
+}
+
+function screensSpec() {
+  return screens.map((s) => (s.on ? "" : "-") + s.id + (s.s ? ":" + s.s : "")).join(",");
+}
+
+function collect() {
+  return {
+    tz: $("#tz-sel").value === CUSTOM ? $("#tz").value.trim() : $("#tz-sel").value,
+    city: $("#city-sel").value === CUSTOM ? $("#city").value.trim() : $("#city-sel").value,
+    lat: $("#lat").value.trim(),
+    lon: $("#lon").value.trim(),
+    aqEu: $("#aq").value === "eu",
+    tickers: $("#tickers").value.toUpperCase().split(/[\s,;]+/).filter(Boolean).join(","),
+    alarm: $("#alarm-on").checked ? $("#alarm").value : "",
+    msg: $("#msg").value,
+    bright: parseInt($("#bright").value, 10),
+    tempOffset: Math.round((parseFloat($("#toff").value) || 0) * 10) / 10,
+    screens: screensSpec()
+  };
+}
+
+function setError(id, msg) {
+  const f = $(id);
+  if (!f) return;
+  f.classList.toggle("bad", !!msg);
+  let small = f.querySelector("small[data-err]");
+  if (msg) {
+    if (!small) { small = document.createElement("small"); small.dataset.err = "1"; f.appendChild(small); }
+    small.textContent = msg;
+  } else if (small) small.remove();
+}
+
+function validate() {
+  const v = collect();
+  const errors = [];
+  const tick = v.tickers ? v.tickers.split(",") : [];
+  const badTick = tick.length > (cfg.maxTickers || 4) || tick.some((x) => !/^[A-Z0-9]{2,20}$/.test(x));
+  setError("#f-tickers", badTick ? t("errTickers") : "");
+  if (badTick) errors.push(t("errTickers"));
+  const hasCoord = v.lat !== "" || v.lon !== "";
+  const lat = Number(v.lat), lon = Number(v.lon);
+  const badCoord = hasCoord && !(v.lat !== "" && v.lon !== "" && isFinite(lat) && isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180);
+  setError("#f-lon", badCoord ? t("errCoord") : "");
+  if (badCoord) errors.push(t("errCoord"));
+  const badSec = screens.some((s) => s.s && (s.s < 1 || s.s > cfg.maxSeconds));
+  if (badSec) errors.push(t("errSeconds").replace("{max}", cfg.maxSeconds));
+  if (!screens.some((s) => s.on)) errors.push(t("errNoScreens"));
+  return errors;
+}
+
+function changed() {
+  const dirty = JSON.stringify(collect()) !== initial;
+  const errors = validate();
+  const msg = $("#save-msg");
+  msg.classList.toggle("err", errors.length > 0);
+  msg.textContent = errors.length ? errors[0] : t("unsaved");
+  $("#save").disabled = !dirty || errors.length > 0 || busy;
+  $("#savebar").classList.toggle("show", dirty);
+}
+
+async function getJson(url, opts) {
+  const r = await fetch(url, Object.assign({ cache: "no-store" }, opts));
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+async function load() {
+  try {
+    cfg = await getJson("/api/settings");
+  } catch (e) {
+    $("#save-msg").textContent = t("loadFail");
+    $("#savebar").classList.add("show");
+    $("#save").disabled = true;
+    return;
+  }
+  fill(cfg);
+  renderStatus(cfg);
+  initial = JSON.stringify(collect());
+  document.body.classList.remove("loading");
+  changed();
+}
+
+async function refreshStatus() {
+  if (document.hidden || busy) return;
+  try { const st = await getJson("/api/status"); Object.assign(cfg, st); renderStatus(cfg); } catch (e) {}
+}
+
+function showOverlay(title, text) {
+  $("#ov-title").textContent = title;
+  $("#ov-text").textContent = text;
+  $("#overlay").classList.add("show");
+}
+
+function waitForRestart() {
+  const portal = cfg && cfg.portal && !cfg.connected;
+  if (portal) { $("#ov-text").textContent += " " + t("portalText"); }
+  const started = Date.now();
+  const poll = async () => {
+    try { await getJson("/api/status"); if (Date.now() - started > 8000) { location.reload(); return; } } catch (e) {}
+    setTimeout(poll, 2000);
+  };
+  setTimeout(poll, 6000);
+}
+
+async function save() {
+  if (busy) return;
+  busy = true;
+  changed();
+  $("#save-msg").textContent = t("saving");
+  try {
+    await getJson("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(collect()) });
+    initial = JSON.stringify(collect());
+    showOverlay(t("savedTitle"), t("savedText"));
+    waitForRestart();
+  } catch (e) {
+    busy = false;
+    changed();
+    const msg = $("#save-msg");
+    msg.textContent = t("saveFail");
+    msg.classList.add("err");
+  }
+}
+
+let brightTimer = 0;
+function sendBrightness() {
+  clearTimeout(brightTimer);
+  brightTimer = setTimeout(() => {
+    fetch("/api/brightness", { method: "POST", body: new URLSearchParams({ value: $("#bright").value }) }).catch(() => {});
+  }, 120);
+}
+
+document.querySelectorAll(".lang button").forEach((b) => {
+  b.onclick = () => { lang = b.dataset.lang; store.set("wl-lang", lang); applyLang(); };
+});
+document.querySelectorAll("main input, main select").forEach((el) => {
+  el.addEventListener("input", changed);
+  el.addEventListener("change", changed);
+});
+$("#alarm-on").addEventListener("change", () => { $("#alarm").disabled = !$("#alarm-on").checked; });
+$("#city-sel").addEventListener("change", () => {
+  const value = $("#city-sel").value;
+  const tzSel = $("#tz-sel");
+  const c = CITIES.find((x) => x[3] === value);
+  // An explicit timezone follows the new city; "auto" already does.
+  if (c && tzSel.value !== "auto" && Array.from(tzSel.options).some((o) => o.value === c[4])) tzSel.value = c[4];
+  syncCustom();
+  if (value === CUSTOM) $("#city").focus();
+  changed();
+});
+$("#tz-sel").addEventListener("change", () => {
+  syncCustom();
+  if ($("#tz-sel").value === CUSTOM) $("#tz").focus();
+  changed();
+});
+$("#bright").addEventListener("input", () => { $("#bright-out").textContent = $("#bright").value; sendBrightness(); });
+$("#save").onclick = save;
+$("#discard").onclick = () => { fill(cfg); changed(); sendBrightness(); };
+$("#restart").onclick = async () => {
+  if (!confirm(t("restartConfirm"))) return;
+  busy = true;
+  try { await fetch("/api/restart", { method: "POST" }); } catch (e) {}
+  showOverlay(t("restartTitle"), t("savedText"));
+  waitForRestart();
+};
+window.addEventListener("beforeunload", (e) => {
+  if (!busy && cfg && JSON.stringify(collect()) !== initial) { e.preventDefault(); e.returnValue = t("leave"); }
+});
+
+applyLang();
+load();
+setInterval(refreshStatus, 10000);
+</script>
+</body>
+</html>

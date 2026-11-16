@@ -9,8 +9,9 @@
 #include "net/HttpJson.h"
 
 void OpenMeteoWeatherProvider::configure(const char *city, bool hasCoordinates,
-                                         float latitude, float longitude)
+                                         float latitude, float longitude, bool europeanAqi)
 {
+    _europeanAqi = europeanAqi;
     _hasCoordinates = hasCoordinates;
     _latitude = latitude;
     _longitude = longitude;
@@ -39,7 +40,18 @@ uint32_t OpenMeteoWeatherProvider::run()
 {
     if (!_hasCoordinates && !geocode())
         return Config::kWeatherRetryMs;
-    return fetchCurrent() ? Config::kWeatherPollMs : Config::kWeatherRetryMs;
+
+    const bool ok = fetchForecast();
+    if (ok)
+        fetchAirQuality(); // optional extra, never blocks the weather itself
+
+    if (ok)
+    {
+        _shared.write(_work);
+        _hasData.store(true);
+        _hasForecast.store(_work.hasMinMax || _work.hasRainChance || _work.hasUv || _work.hasAirQuality);
+    }
+    return ok ? Config::kWeatherPollMs : Config::kWeatherRetryMs;
 }
 
 bool OpenMeteoWeatherProvider::geocode()
@@ -76,12 +88,14 @@ bool OpenMeteoWeatherProvider::geocode()
     return true;
 }
 
-bool OpenMeteoWeatherProvider::fetchCurrent()
+bool OpenMeteoWeatherProvider::fetchForecast()
 {
-    char url[200];
+    char url[360];
     snprintf(url, sizeof(url),
              "https://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f"
-             "&current=temperature_2m,relative_humidity_2m,weather_code,is_day&timezone=auto",
+             "&current=temperature_2m,relative_humidity_2m,weather_code,is_day"
+             "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max"
+             "&forecast_days=1&timezone=auto",
              _latitude, _longitude);
 
     JsonDocument filter;
@@ -89,6 +103,12 @@ bool OpenMeteoWeatherProvider::fetchCurrent()
     filter["current"]["relative_humidity_2m"] = true;
     filter["current"]["weather_code"] = true;
     filter["current"]["is_day"] = true;
+    filter["daily"]["temperature_2m_max"] = true;
+    filter["daily"]["temperature_2m_min"] = true;
+    filter["daily"]["precipitation_probability_max"] = true;
+    filter["daily"]["uv_index_max"] = true;
+    filter["timezone"] = true;           // timezone=auto: the location's own zone
+    filter["utc_offset_seconds"] = true;
 
     JsonDocument doc;
     if (HttpJson::get(String(url), doc, &filter) != HTTP_CODE_OK)
@@ -98,6 +118,7 @@ bool OpenMeteoWeatherProvider::fetchCurrent()
     if (current.isNull() || current["temperature_2m"].isNull() || current["weather_code"].isNull())
         return false;
 
+    // ---- current conditions ----
     const uint16_t code = current["weather_code"].as<uint16_t>();
     _work.valid = true;
     _work.temperatureC = current["temperature_2m"].as<float>();
@@ -108,11 +129,56 @@ bool OpenMeteoWeatherProvider::fetchCurrent()
     strlcpy(_work.place, _place, sizeof(_work.place));
     _work.updatedMs = millis();
 
-    _shared.write(_work);
-    _hasData.store(true);
-    LOG_DEBUG("Weather: %.1f C, %u %%, code %u, %s", _work.temperatureC, _work.humidity, code,
-              _work.isDay ? "day" : "night");
+    // ---- timezone of the location ----
+    JsonVariantConst zone = doc["timezone"];
+    JsonVariantConst offset = doc["utc_offset_seconds"];
+    _work.hasTimezone = !offset.isNull();
+    strlcpy(_work.zoneName, zone | "", sizeof(_work.zoneName));
+    _work.utcOffsetS = offset | 0;
+
+    // ---- today (index 0 of the daily arrays); any field may be null ----
+    JsonObjectConst daily = doc["daily"];
+    JsonVariantConst maxC = daily["temperature_2m_max"][0];
+    JsonVariantConst minC = daily["temperature_2m_min"][0];
+    JsonVariantConst rain = daily["precipitation_probability_max"][0];
+    JsonVariantConst uv = daily["uv_index_max"][0];
+    _work.hasMinMax = !maxC.isNull() && !minC.isNull();
+    _work.maxC = maxC | 0.0f;
+    _work.minC = minC | 0.0f;
+    _work.hasRainChance = !rain.isNull();
+    _work.rainChance = static_cast<uint8_t>(constrain(rain | 0, 0, 100));
+    _work.hasUv = !uv.isNull();
+    _work.uvMax = uv | 0.0f;
+
+    LOG_DEBUG("Weather: %.1f C, %u %%, code %u, %s | max %.1f min %.1f rain %u %% uv %.1f",
+              _work.temperatureC, _work.humidity, code, _work.isDay ? "day" : "night", _work.maxC,
+              _work.minC, _work.rainChance, _work.uvMax);
     return true;
+}
+
+void OpenMeteoWeatherProvider::fetchAirQuality()
+{
+    char url[200];
+    snprintf(url, sizeof(url),
+             "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=%.4f&longitude=%.4f"
+             "&current=us_aqi,european_aqi",
+             _latitude, _longitude);
+
+    JsonDocument filter;
+    filter["current"]["us_aqi"] = true;
+    filter["current"]["european_aqi"] = true;
+
+    JsonDocument doc;
+    if (HttpJson::get(String(url), doc, &filter) != HTTP_CODE_OK)
+        return; // keep the previous reading, if any
+
+    JsonVariantConst us = doc["current"]["us_aqi"];
+    JsonVariantConst eu = doc["current"]["european_aqi"];
+    JsonVariantConst used = _europeanAqi ? eu : us;
+    _work.hasAirQuality = !used.isNull();
+    _work.usAqi = static_cast<uint16_t>(constrain(us | 0, 0, 999));
+    _work.europeanAqi = static_cast<uint16_t>(constrain(eu | 0, 0, 999));
+    LOG_DEBUG("Air quality: US %u, EU %u", _work.usAqi, _work.europeanAqi);
 }
 
 // WMO weather interpretation codes, as used by Open-Meteo.

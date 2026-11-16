@@ -11,6 +11,7 @@
 //    * priority(): 0 = regular screen in the rotation; > 0 = interrupt screen
 //      (alert, portal, alarm) that preempts any lower priority as soon as
 //      canBeShown() becomes true, and hands back to the rotation when done.
+//      It may change at runtime: a running timer pins itself this way.
 //    * onButton(): lets the active screen consume a button (e.g. dismiss).
 // =============================================================================
 class IDisplayStateProvider
@@ -28,6 +29,10 @@ public:
 
     // How long the state stays on screen (ms). 0 = until isFinished().
     virtual uint32_t getDurationMs() const = 0;
+
+    // Duration chosen in the "Screens" setting. Each state decides what it
+    // means (screen time, time per ticker symbol...). Default: ignored.
+    virtual void setDurationMs(uint32_t ms) { (void)ms; }
 
     // Whether the state has something to show right now.
     virtual bool canBeShown() const { return true; }

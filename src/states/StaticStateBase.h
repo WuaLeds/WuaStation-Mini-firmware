@@ -20,6 +20,7 @@ public:
 
     const char *getId() const override { return _id; }
     uint32_t getDurationMs() const override { return _duration; }
+    void setDurationMs(uint32_t ms) override { _duration = ms; }
     uint8_t priority() const override { return _priority; }
 
     void onEnter(WuaDisplay &display) override;

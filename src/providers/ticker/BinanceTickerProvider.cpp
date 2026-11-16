@@ -63,13 +63,13 @@ void BinanceTickerProvider::configure(const char *symbolsCsv)
 }
 
 bool BinanceTickerProvider::request(const String &pathAndQuery, JsonDocument &doc,
-                                    const JsonDocument &filter, int &code)
+                                    const JsonDocument *filter, int &code)
 {
     for (uint8_t attempt = 0; attempt < kHostCount; ++attempt)
     {
         const uint8_t host = (_host + attempt) % kHostCount;
         doc.clear();
-        code = HttpJson::get(String("https://") + kHosts[host] + pathAndQuery, doc, &filter);
+        code = HttpJson::get(String("https://") + kHosts[host] + pathAndQuery, doc, filter);
         if (code == HTTP_CODE_OK)
         {
             _host = host; // stick to the host that works
@@ -88,7 +88,7 @@ bool BinanceTickerProvider::fetchMeta(TickerQuote &q, int &code)
     filter["symbols"][0]["quoteAsset"] = true;
 
     JsonDocument doc;
-    if (!request(String("/api/v3/exchangeInfo?symbol=") + q.symbol, doc, filter, code))
+    if (!request(String("/api/v3/exchangeInfo?symbol=") + q.symbol, doc, &filter, code))
         return false;
 
     const char *base = doc["symbols"][0]["baseAsset"];
@@ -110,7 +110,7 @@ bool BinanceTickerProvider::fetchQuote(TickerQuote &q, int &code)
     filter["priceChangePercent"] = true;
 
     JsonDocument doc;
-    if (!request(String("/api/v3/ticker/24hr?symbol=") + q.symbol, doc, filter, code))
+    if (!request(String("/api/v3/ticker/24hr?symbol=") + q.symbol, doc, &filter, code))
         return false;
     if (doc["lastPrice"].isNull())
         return false;

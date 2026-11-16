@@ -79,7 +79,7 @@ void SensorManager::loop()
             markFailure();
             break;
         }
-        r.temperatureC += Config::kSensorTempOffsetC;
+        r.temperatureC += _tempOffsetC;
         r.timestampMs = now;
         _reading = r;
         _hasReading = true;

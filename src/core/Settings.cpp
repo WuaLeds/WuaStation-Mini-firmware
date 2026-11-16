@@ -1,7 +1,9 @@
 #include "core/Settings.h"
 
 #include <ctype.h>
+#include <math.h>
 #include "config/Config.h"
+#include "config/ScreenConfig.h"
 #include "core/Logger.h"
 
 namespace
@@ -16,7 +18,11 @@ namespace
     constexpr const char *kKeyTickers = "tickers";
     constexpr const char *kKeyAlarm = "alarm";
     constexpr const char *kKeyMessage = "msg";
+    constexpr const char *kKeyScreens = "screens";
     constexpr const char *kKeyBrightness = "bright";
+    constexpr const char *kKeyTempOffset = "toff";
+    constexpr const char *kKeyEuropeanAqi = "aqeu";
+    constexpr const char *kKeyLocationZone = "tzauto"; // not a user setting
 
     // Trim leading/trailing whitespace in place.
     void trim(char *s)
@@ -80,7 +86,10 @@ void SettingsStore::loadDefaults(Settings &s)
     strlcpy(s.timezone, Config::kDefaultTimezone, sizeof(s.timezone));
     strlcpy(s.city, Config::kDefaultCity, sizeof(s.city));
     strlcpy(s.tickers, Config::kDefaultTickers, sizeof(s.tickers));
+    strlcpy(s.screens, Config::kDefaultScreens, sizeof(s.screens));
     s.brightness = Config::kDefaultBrightness;
+    s.tempOffsetC = Config::kSensorTempOffsetC;
+    s.europeanAqi = Config::kAirQualityEuropean;
 }
 
 void SettingsStore::sanitize(Settings &s)
@@ -92,6 +101,7 @@ void SettingsStore::sanitize(Settings &s)
     trim(s.message);
     trim(s.alarm);
     normalizeTickers(s.tickers);
+    ScreenConfig::normalize(s.screens, sizeof(s.screens));
 
     if (s.timezone[0] == '\0')
         strlcpy(s.timezone, Config::kDefaultTimezone, sizeof(s.timezone));
@@ -116,6 +126,10 @@ void SettingsStore::sanitize(Settings &s)
 
     if (s.brightness == 0)
         s.brightness = 1;
+
+    if (!(s.tempOffsetC >= -Config::kSensorTempOffsetMaxC && s.tempOffsetC <= Config::kSensorTempOffsetMaxC))
+        s.tempOffsetC = 0.0f; // also catches NaN
+    s.tempOffsetC = roundf(s.tempOffsetC * 10.0f) / 10.0f;
 }
 
 void SettingsStore::readString(const char *key, char *dst, size_t size, const char *fallback)
@@ -140,13 +154,21 @@ void SettingsStore::begin()
     readString(kKeyTickers, _settings.tickers, sizeof(_settings.tickers), defaults.tickers);
     readString(kKeyAlarm, _settings.alarm, sizeof(_settings.alarm), defaults.alarm);
     readString(kKeyMessage, _settings.message, sizeof(_settings.message), defaults.message);
+    readString(kKeyScreens, _settings.screens, sizeof(_settings.screens), defaults.screens);
     _settings.brightness = _prefs.getUChar(kKeyBrightness, defaults.brightness);
+    _settings.tempOffsetC = _prefs.isKey(kKeyTempOffset) ? _prefs.getFloat(kKeyTempOffset) : defaults.tempOffsetC;
+    _settings.europeanAqi = _prefs.getBool(kKeyEuropeanAqi, defaults.europeanAqi);
+    readString(kKeyLocationZone, _locationZone, sizeof(_locationZone), "");
 
     sanitize(_settings);
 
     LOG_INFO("Settings: tz=%s city=%s lat=%s lon=%s tickers=%s alarm=%s bright=%u",
              _settings.timezone, _settings.city, _settings.latitude, _settings.longitude,
              _settings.tickers, _settings.alarm, _settings.brightness);
+    LOG_INFO("Screens: %s | sensor offset %.1f C | %s AQI", _settings.screens, _settings.tempOffsetC,
+             _settings.europeanAqi ? "European" : "US");
+    if (_locationZone[0])
+        LOG_INFO("Last location zone: %s", _locationZone);
 }
 
 bool SettingsStore::save()
@@ -161,7 +183,10 @@ bool SettingsStore::save()
     _prefs.putString(kKeyTickers, _settings.tickers);
     _prefs.putString(kKeyAlarm, _settings.alarm);
     _prefs.putString(kKeyMessage, _settings.message);
+    ok &= _prefs.putString(kKeyScreens, _settings.screens) > 0;
     ok &= _prefs.putUChar(kKeyBrightness, _settings.brightness) > 0;
+    ok &= _prefs.putFloat(kKeyTempOffset, _settings.tempOffsetC) > 0;
+    ok &= _prefs.putBool(kKeyEuropeanAqi, _settings.europeanAqi) > 0;
     _brightnessPending = false;
     LOG_INFO("Settings saved (%s)", ok ? "ok" : "error");
     return ok;
@@ -188,7 +213,17 @@ void SettingsStore::factoryReset()
 {
     _prefs.clear();
     loadDefaults(_settings);
+    _locationZone[0] = '\0';
     LOG_WARN("Settings erased");
+}
+
+void SettingsStore::rememberLocationZone(const char *posix)
+{
+    if (!posix || strcmp(posix, _locationZone) == 0)
+        return;
+    strlcpy(_locationZone, posix, sizeof(_locationZone));
+    _prefs.putString(kKeyLocationZone, _locationZone);
+    LOG_DEBUG("Location zone %s stored", _locationZone);
 }
 
 bool SettingsStore::alarmTime(uint8_t &hour, uint8_t &minute) const

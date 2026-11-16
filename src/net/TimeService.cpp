@@ -11,15 +11,49 @@ namespace
     constexpr time_t kValidEpoch = 1704067200;
 }
 
-void TimeService::begin(const char *timezoneSetting)
+void TimeService::begin(const char *timezoneSetting, const char *lastLocationZone)
 {
+    _auto = Timezones::isAuto(timezoneSetting);
+    if (_auto)
+    {
+        // Known once the weather location reports its zone.
+        _timezoneKnown = true;
+        apply(lastLocationZone && *lastLocationZone ? lastLocationZone : "UTC0");
+        LOG_INFO("Timezone auto (weather location), starting with '%s'", _posix);
+        return;
+    }
+
     const char *posix = Timezones::toPosix(timezoneSetting);
     _timezoneKnown = posix != nullptr;
-    strlcpy(_posix, posix ? posix : "UTC0", sizeof(_posix));
+    apply(posix ? posix : "UTC0");
+    LOG_INFO("Timezone '%s' -> '%s'%s", timezoneSetting, _posix, _timezoneKnown ? "" : " (unknown, UTC)");
+}
 
+bool TimeService::applyLocationZone(const char *ianaName, int32_t utcOffsetSeconds)
+{
+    if (!_auto)
+        return false;
+
+    char posix[sizeof(_posix)];
+    const char *known = (ianaName && *ianaName) ? Timezones::toPosix(ianaName) : nullptr;
+    if (known)
+        strlcpy(posix, known, sizeof(posix));
+    else
+        Timezones::fromUtcOffset(utcOffsetSeconds, posix, sizeof(posix));
+
+    if (strcmp(posix, _posix) == 0)
+        return false;
+    apply(posix);
+    LOG_INFO("Timezone auto: '%s' (UTC%+ld s) -> '%s'", ianaName ? ianaName : "",
+             static_cast<long>(utcOffsetSeconds), _posix);
+    return true;
+}
+
+void TimeService::apply(const char *posix)
+{
+    strlcpy(_posix, posix, sizeof(_posix));
     setenv("TZ", _posix, 1);
     tzset();
-    LOG_INFO("Timezone '%s' -> '%s'%s", timezoneSetting, _posix, _timezoneKnown ? "" : " (unknown, UTC)");
 }
 
 void TimeService::startSync()

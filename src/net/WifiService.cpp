@@ -7,10 +7,8 @@
 #include "config/Config.h"
 #include "core/Logger.h"
 
-void WifiService::begin(SettingsStore &settings)
+void WifiService::begin()
 {
-    _settings = &settings;
-
     snprintf(_apName, sizeof(_apName), "%s-%s", Config::kDeviceName, Board::deviceId());
     snprintf(_hostname, sizeof(_hostname), "%s-%s", Config::kHostnamePrefix, Board::deviceId());
     for (char *p = _hostname; *p; ++p)
@@ -31,60 +29,18 @@ void WifiService::begin(SettingsStore &settings)
     _wm.setHostname(_hostname);
     _wm.setTitle(Config::kDeviceName);
     _wm.setDarkMode(true);
-    std::vector<const char *> menu = {"param", "wifi", "info", "restart"};
+    std::vector<const char *> menu = {"wifi", "info", "restart"};
     _wm.setMenu(menu);
-
-    setupParameters();
-    _wm.setSaveParamsCallback([this]() { applyParameters(); });
+    // Runs before WiFiManager adds its own routes, so ours win.
+    _wm.setWebServerCallback([this]() {
+        if (_onWebServer && _wm.server)
+            _onWebServer(*_wm.server);
+    });
 
     if (hasCredentials())
         beginConnect();
     else
         startPortal();
-}
-
-void WifiService::setupParameters()
-{
-    const Settings &s = _settings->get();
-    char brightness[4];
-    snprintf(brightness, sizeof(brightness), "%u", s.brightness);
-
-    _pTimezone.setValue(s.timezone, 47);
-    _pCity.setValue(s.city, 47);
-    _pLatitude.setValue(s.latitude, 15);
-    _pLongitude.setValue(s.longitude, 15);
-    _pTickers.setValue(s.tickers, 63);
-    _pAlarm.setValue(s.alarm, 5);
-    _pMessage.setValue(s.message, 127);
-    _pBrightness.setValue(brightness, 3);
-
-    _wm.addParameter(&_pTimezone);
-    _wm.addParameter(&_pCity);
-    _wm.addParameter(&_pLatitude);
-    _wm.addParameter(&_pLongitude);
-    _wm.addParameter(&_pTickers);
-    _wm.addParameter(&_pAlarm);
-    _wm.addParameter(&_pMessage);
-    _wm.addParameter(&_pBrightness);
-}
-
-void WifiService::applyParameters()
-{
-    Settings &s = _settings->get();
-    strlcpy(s.timezone, _pTimezone.getValue(), sizeof(s.timezone));
-    strlcpy(s.city, _pCity.getValue(), sizeof(s.city));
-    strlcpy(s.latitude, _pLatitude.getValue(), sizeof(s.latitude));
-    strlcpy(s.longitude, _pLongitude.getValue(), sizeof(s.longitude));
-    strlcpy(s.tickers, _pTickers.getValue(), sizeof(s.tickers));
-    strlcpy(s.alarm, _pAlarm.getValue(), sizeof(s.alarm));
-    strlcpy(s.message, _pMessage.getValue(), sizeof(s.message));
-    const long brightness = strtol(_pBrightness.getValue(), nullptr, 10);
-    s.brightness = static_cast<uint8_t>(constrain(brightness, 1L, 255L));
-
-    _settings->save();
-    LOG_INFO("Settings updated from the portal");
-    if (_onSettingsSaved)
-        _onSettingsSaved();
 }
 
 const char *WifiService::apPassword() const

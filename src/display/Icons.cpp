@@ -121,6 +121,51 @@ namespace Icons
         "......."
         "...C..."
         "......."};
+
+    const Icon kArrowUp{7, 7,
+        "...R..."
+        "..RRR.."
+        ".R.R.R."
+        "R..R..R"
+        "...R..."
+        "...R..."
+        "...R..."};
+
+    const Icon kArrowDown{7, 7,
+        "...B..."
+        "...B..."
+        "...B..."
+        "B..B..B"
+        ".B.B.B."
+        "..BBB.."
+        "...B..."};
+
+    const Icon kUmbrella{7, 7,
+        "..BBB.."
+        ".BBBBB."
+        "BBBBBBB"
+        "...W..."
+        "...W..."
+        ".W.W..."
+        "..W...."};
+
+    const Icon kHourglass{7, 7,
+        ".WWWWW."
+        ".WYYYW."
+        "..WYW.."
+        "...W..."
+        "..W.W.."
+        ".WYYYW."
+        ".WWWWW."};
+
+    const Icon kTomato{7, 7,
+        "..g.g.."
+        "...g..."
+        ".RRRRR."
+        "RRRRRRR"
+        "RRRRRRR"
+        ".RRRRR."
+        "..RRR.."};
     // clang-format on
 
     namespace
@@ -139,6 +184,7 @@ namespace Icons
             case 'S': rgb = {180, 220, 255}; break;
             case 'R': rgb = {255, 40, 20}; break;
             case 'M': rgb = {230, 230, 160}; break;
+            case 'g': rgb = {40, 200, 40}; break;
             default: return false;
             }
             out = rgb.to565();

@@ -18,7 +18,7 @@
 class DisplayController
 {
 public:
-    static constexpr uint8_t kMaxStates = 16;
+    static constexpr uint8_t kMaxStates = 24;
 
     DisplayController(WuaDisplay &display, Compositor &compositor)
         : _display(display), _compositor(compositor) {}

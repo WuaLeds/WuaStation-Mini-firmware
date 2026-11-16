@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include "config/Config.h"
 #include "providers/sensors/Aht2xSensor.h"
 #include "providers/sensors/Bme280Sensor.h"
 #include "providers/sensors/ISensor.h"
@@ -27,6 +28,9 @@ public:
     const SensorReading &reading() const { return _reading; }
     uint32_t version() const { return _version; }
     const char *sensorName() const { return _active ? _active->name() : ""; }
+
+    // Added to every temperature reading (enclosure self-heating).
+    void setTemperatureOffset(float celsius) { _tempOffsetC = celsius; }
 
     // One-shot UI events (true once per occurrence).
     bool takeDetectedEvent();
@@ -60,6 +64,7 @@ private:
     uint8_t _failures = 0;
 
     SensorReading _reading{};
+    float _tempOffsetC = Config::kSensorTempOffsetC;
     bool _hasReading = false;
     uint32_t _version = 0;
     bool _detectedEvent = false;

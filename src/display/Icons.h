@@ -8,6 +8,7 @@
 //  Pixels are written as strings, one char per pixel, using a small palette:
 //    '.' off      'Y' yellow   'O' orange   'W' white    'G' gray
 //    'B' blue     'C' cyan     'S' snow     'R' red      'M' moon
+//    'g' green
 //  so the artwork stays readable and easy to tweak in the source.
 // =============================================================================
 namespace Icons
@@ -32,6 +33,11 @@ namespace Icons
     extern const Icon kHouse;
     extern const Icon kDrop;
     extern const Icon kWifi;
+    extern const Icon kArrowUp;   // daily maximum
+    extern const Icon kArrowDown; // daily minimum
+    extern const Icon kUmbrella;  // chance of rain
+    extern const Icon kHourglass; // countdown timer
+    extern const Icon kTomato;    // pomodoro
 
     // Draw with the icon's own palette colors.
     void draw(Adafruit_GFX &g, const Icon &icon, int16_t x, int16_t y);

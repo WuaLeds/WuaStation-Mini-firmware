@@ -20,7 +20,8 @@ uint8_t IndoorStateProvider::phaseCount() const
 uint8_t IndoorStateProvider::currentPhase() const
 {
     const uint8_t phases = phaseCount();
-    const uint8_t phase = static_cast<uint8_t>(shownMs() / (Config::kIndoorScreenMs / phases));
+    const uint32_t slotMs = getDurationMs() / phases;
+    const uint8_t phase = slotMs > 0 ? static_cast<uint8_t>(shownMs() / slotMs) : 0;
     return phase >= phases ? phases - 1 : phase;
 }
 
@@ -55,11 +56,7 @@ void IndoorStateProvider::render(Adafruit_GFX &canvas)
     uint8_t phase = _phase;
     if (phase == 0)
     {
-        const int t = static_cast<int>(lroundf(_reading.temperatureC));
-        if (t <= -10)
-            snprintf(text, sizeof(text), "%d", t);
-        else
-            snprintf(text, sizeof(text), "%d%c", t, TinyFont::kDegree);
+        Widgets::formatTemperature(_reading.temperatureC, text, sizeof(text));
         Widgets::iconAndValue(canvas, Icons::kHouse, text, Theme::kIndoorTemp.to565());
         return;
     }

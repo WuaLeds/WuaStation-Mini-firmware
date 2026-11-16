@@ -15,7 +15,7 @@
 class AlarmStateProvider : public StaticStateBase
 {
 public:
-    static constexpr uint8_t kPriority = 3;
+    static constexpr uint8_t kPriority = 4;
 
     AlarmStateProvider(Compositor &compositor, const TimeService &time, const SettingsStore &settings);
 

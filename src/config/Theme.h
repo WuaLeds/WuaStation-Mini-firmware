@@ -34,6 +34,14 @@ namespace Theme
     constexpr Rgb kTickerDown{255, 40, 30};
     constexpr Rgb kTickerFlat{210, 210, 210};
 
+    constexpr Rgb kRainChance{60, 160, 255};
+    constexpr Rgb kUvTag{180, 80, 255};
+    constexpr Rgb kAirTag{150, 150, 165};
+
+    constexpr Rgb kTimerCountdown{0, 200, 255};
+    constexpr Rgb kPomodoroWork{255, 60, 30};
+    constexpr Rgb kPomodoroBreak{0, 220, 90};
+
     constexpr Rgb kMessage{200, 80, 255};
     constexpr Rgb kCelebration{255, 60, 180};
     constexpr Rgb kAlert{255, 40, 30};

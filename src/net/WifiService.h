@@ -4,7 +4,6 @@
 #include <WiFi.h>
 #include <WiFiManager.h>
 #include <functional>
-#include "core/Settings.h"
 
 // =============================================================================
 //  WifiService -- non-blocking WiFi life cycle.
@@ -16,9 +15,10 @@
 //
 //    Connected ── link lost ──> Connecting ── 30 s ──> Offline (retries)
 //
-//  The captive portal (WiFiManager, non-blocking) also exposes the user
-//  settings. While connected, the same settings page is served on the LAN IP
-//  (http://wuastation-xxxx.local) so nothing needs the AP after first setup.
+//  WiFiManager (non-blocking) provides the captive portal and its WiFi pages
+//  (/wifi). The station's own settings page is registered on the same web
+//  server through onWebServer() (see web/SettingsServer), both in the portal
+//  and on the LAN IP (http://wuastation-xxxx.local) once connected.
 // =============================================================================
 class WifiService
 {
@@ -33,8 +33,9 @@ public:
     };
 
     using Callback = std::function<void()>;
+    using ServerCallback = std::function<void(WebServer &)>;
 
-    void begin(SettingsStore &settings);
+    void begin();
     void loop();
 
     // Open the configuration access point (UP long-press).
@@ -56,19 +57,22 @@ public:
 
     // Fired on every (re)connection.
     void onConnected(Callback cb) { _onConnected = std::move(cb); }
-    // Fired after the settings page was saved (values already persisted).
-    void onSettingsSaved(Callback cb) { _onSettingsSaved = std::move(cb); }
+    // Fired whenever WiFiManager (re)creates its web server, before its own
+    // routes: handlers registered here take precedence (e.g. "/").
+    // Call before begin().
+    void onWebServer(ServerCallback cb) { _onWebServer = std::move(cb); }
+
+    // Name of the WiFi network in use (empty when not connected).
+    String ssid() const { return isConnected() ? WiFi.SSID() : String(); }
+    int8_t rssi() const { return isConnected() ? WiFi.RSSI() : 0; }
 
 private:
     void setState(State s);
     void beginConnect();
     void handleConnected();
     void stopPortal();
-    void setupParameters();
-    void applyParameters();
 
     WiFiManager _wm;
-    SettingsStore *_settings = nullptr;
 
     State _state = State::Idle;
     uint32_t _stateSinceMs = 0;
@@ -81,15 +85,5 @@ private:
     char _hostname[32] = {};
 
     Callback _onConnected;
-    Callback _onSettingsSaved;
-
-    // Settings page fields (WiFiManager keeps pointers to them).
-    WiFiManagerParameter _pTimezone{"tz", "Timezone (Europe/Madrid, America/Argentina/Buenos_Aires or POSIX TZ)", "", 47};
-    WiFiManagerParameter _pCity{"city", "Weather city (Madrid or Madrid,ES)", "", 47};
-    WiFiManagerParameter _pLatitude{"lat", "Latitude (optional, overrides the city)", "", 15};
-    WiFiManagerParameter _pLongitude{"lon", "Longitude (optional)", "", 15};
-    WiFiManagerParameter _pTickers{"tickers", "Binance tickers, comma separated, max 4 (BTCUSDT,ETHUSDT)", "", 63};
-    WiFiManagerParameter _pAlarm{"alarm", "Alarm HH:MM (empty = off)", "", 5, "placeholder='07:30'"};
-    WiFiManagerParameter _pMessage{"msg", "Custom message (empty = off)", "", 127};
-    WiFiManagerParameter _pBrightness{"bright", "Brightness 1-255", "", 3, "type='number' min='1' max='255'"};
+    ServerCallback _onWebServer;
 };

@@ -37,7 +37,7 @@ const Icons::Icon &WeatherStateProvider::iconFor(WeatherCondition condition, boo
 
 uint8_t WeatherStateProvider::currentPhase() const
 {
-    return shownMs() < Config::kWeatherScreenMs / 2 ? 0 : 1;
+    return shownMs() < getDurationMs() / 2 ? 0 : 1;
 }
 
 void WeatherStateProvider::onShow()
@@ -69,12 +69,7 @@ void WeatherStateProvider::render(Adafruit_GFX &canvas)
     char text[8];
     if (_phase == 0)
     {
-        const int t = static_cast<int>(lroundf(_data.temperatureC));
-        // "-12" has no room for the degree sign next to the icon.
-        if (t <= -10)
-            snprintf(text, sizeof(text), "%d", t);
-        else
-            snprintf(text, sizeof(text), "%d%c", t, TinyFont::kDegree);
+        Widgets::formatTemperature(_data.temperatureC, text, sizeof(text));
         Widgets::iconAndValue(canvas, iconFor(_data.condition, _data.isDay), text,
                               Theme::kWeatherTemp.to565());
     }

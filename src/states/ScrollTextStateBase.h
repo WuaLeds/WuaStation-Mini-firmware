@@ -28,6 +28,8 @@ public:
 
     const char *getId() const override { return _id; }
     uint32_t getDurationMs() const override { return _duration; }
+    // A duration turns "N passes" into "keep scrolling for this long".
+    void setDurationMs(uint32_t ms) override { _duration = ms; }
     uint8_t priority() const override { return _priority; }
     bool isFinished() const override { return _finished; }
 

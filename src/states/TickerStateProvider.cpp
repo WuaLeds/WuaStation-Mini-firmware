@@ -1,7 +1,7 @@
 #include "states/TickerStateProvider.h"
 
 #include <math.h>
-#include "config/Config.h"
+#include "config/Theme.h"
 #include "display/TinyFont.h"
 
 namespace
@@ -30,7 +30,7 @@ namespace
 }
 
 TickerStateProvider::TickerStateProvider(Compositor &compositor, const BinanceTickerProvider &provider)
-    : StaticStateBase(compositor, "ticker", 0), _provider(provider)
+    : PagedStateBase(compositor, "ticker", 0), _provider(provider)
 {
 }
 
@@ -105,155 +105,84 @@ void TickerStateProvider::formatChange(float percent, char *out, size_t size)
     snprintf(out, size, "%.0f%%", fabsf(percent));
 }
 
+uint16_t TickerStateProvider::priceColor(const TickerQuote &quote)
+{
+    switch (quote.trend)
+    {
+    case PriceTrend::Up:
+        return Theme::kTickerUp.to565();
+    case PriceTrend::Down:
+        return Theme::kTickerDown.to565();
+    case PriceTrend::Flat:
+        return Theme::kTickerFlat.to565();
+    case PriceTrend::Unknown:
+    default:
+        return (quote.changePct >= 0.0f ? Theme::kTickerUp : Theme::kTickerDown).to565();
+    }
+}
+
 // -----------------------------------------------------------------------------
 //  Pages
 // -----------------------------------------------------------------------------
-bool TickerStateProvider::selectQuote(uint8_t from)
-{
-    for (uint8_t i = from; i < _snapshot.count; ++i)
-    {
-        if (_snapshot.quotes[i].hasPrice)
-        {
-            _quote = i;
-            return true;
-        }
-    }
-    return false;
-}
-
-bool TickerStateProvider::nextPage()
-{
-    switch (_page)
-    {
-    case Page::Name:
-        _page = Page::Price;
-        break;
-    case Page::Price:
-        _page = Page::Change;
-        break;
-    case Page::Change:
-        if (!selectQuote(_quote + 1))
-            return false;
-        _page = Page::Name;
-        break;
-    }
-    preparePage();
-    return true;
-}
-
-void TickerStateProvider::preparePage()
-{
-    const TickerQuote &q = _snapshot.quotes[_quote];
-    uint32_t baseDurationMs = Config::kTickerNameMs;
-
-    switch (_page)
-    {
-    case Page::Name:
-        strlcpy(_text, q.base[0] ? q.base : q.symbol, sizeof(_text));
-        _color = Theme::kTickerName;
-        // Classic 5x7 font when it fits (3 letters), else the compact one.
-        if (Widgets::textWidth(Widgets::Font::Classic, _text) <= Layout::kWidth)
-            _font = Widgets::Font::Classic;
-        else if (Widgets::textWidth(Widgets::Font::Tiny, _text) <= Layout::kWidth)
-            _font = Widgets::Font::Tiny;
-        else
-            _font = Widgets::Font::Classic; // too long either way: pan it
-        baseDurationMs = Config::kTickerNameMs;
-        break;
-
-    case Page::Price:
-        formatPrice(q.last, _text, sizeof(_text));
-        _font = Widgets::Font::Tiny;
-        switch (q.trend)
-        {
-        case PriceTrend::Up:
-            _color = Theme::kTickerUp;
-            break;
-        case PriceTrend::Down:
-            _color = Theme::kTickerDown;
-            break;
-        case PriceTrend::Flat:
-            _color = Theme::kTickerFlat;
-            break;
-        case PriceTrend::Unknown:
-        default:
-            _color = q.changePct >= 0.0f ? Theme::kTickerUp : Theme::kTickerDown;
-            break;
-        }
-        baseDurationMs = Config::kTickerPriceMs;
-        break;
-
-    case Page::Change:
-        formatChange(q.changePct, _text, sizeof(_text));
-        _font = Widgets::Font::Tiny;
-        _color = q.changePct >= 0.0f ? Theme::kTickerUp : Theme::kTickerDown;
-        baseDurationMs = Config::kTickerChangeMs;
-        break;
-    }
-
-    _textWidth = Widgets::textWidth(_font, _text);
-    _pageStartMs = millis();
-    _shownOffset = 0;
-
-    // A page wider than the panel stays long enough to pan all the way.
-    const int16_t overflow = _textWidth - Layout::kWidth;
-    const uint32_t panMs = overflow > 0
-                               ? 2 * Config::kTickerPanHoldMs + static_cast<uint32_t>(overflow) * Config::kScrollSpeedMs
-                               : 0;
-    _pageDurationMs = panMs > baseDurationMs ? panMs : baseDurationMs;
-}
-
-int16_t TickerStateProvider::panOffset(uint32_t elapsedMs) const
-{
-    const int16_t overflow = _textWidth - Layout::kWidth;
-    if (overflow <= 0 || elapsedMs <= Config::kTickerPanHoldMs)
-        return 0;
-    const uint32_t offset = (elapsedMs - Config::kTickerPanHoldMs) / Config::kScrollSpeedMs;
-    return offset >= static_cast<uint32_t>(overflow) ? overflow : static_cast<int16_t>(offset);
-}
-
-// -----------------------------------------------------------------------------
-//  StaticStateBase hooks
-// -----------------------------------------------------------------------------
-void TickerStateProvider::onShow()
+uint8_t TickerStateProvider::beginPages()
 {
     // Freeze one snapshot per visit so a refresh never reshuffles the pages.
     _provider.read(_snapshot);
-    _page = Page::Name;
-    _finished = !selectQuote(0);
-    if (_finished)
+    uint8_t symbols = 0;
+    for (uint8_t i = 0; i < _snapshot.count; ++i)
     {
-        _text[0] = '\0';
-        _textWidth = 0;
-        return;
+        if (_snapshot.quotes[i].hasPrice)
+            _symbols[symbols++] = i;
     }
-    preparePage();
+    return static_cast<uint8_t>(symbols * kPagesPerSymbol);
 }
 
-void TickerStateProvider::tick()
+void TickerStateProvider::enterPage(uint8_t page)
 {
-    if (_finished)
-        return;
+    const TickerQuote &q = _snapshot.quotes[_symbols[page / kPagesPerSymbol]];
+    char text[24];
 
-    const uint32_t elapsed = millis() - _pageStartMs;
-    if (elapsed >= _pageDurationMs)
+    switch (page % kPagesPerSymbol)
     {
-        if (nextPage())
-            invalidate(Compositor::Transition::Fade);
-        else
-            _finished = true; // every symbol shown: back to the rotation
-        return;
+    case 0: // name
+    {
+        const char *name = q.base[0] ? q.base : q.symbol;
+        Widgets::makeLabel(_label, name, Theme::kTickerName.to565(), Widgets::bestFont(name));
+        break;
     }
-
-    if (panOffset(elapsed) != _shownOffset)
-        invalidate();
+    case 1: // price
+        formatPrice(q.last, text, sizeof(text));
+        Widgets::makeLabel(_label, text, priceColor(q), Widgets::Font::Tiny);
+        break;
+    default: // 24 h change
+        formatChange(q.changePct, text, sizeof(text));
+        Widgets::makeLabel(_label, text,
+                           (q.changePct >= 0.0f ? Theme::kTickerUp : Theme::kTickerDown).to565(),
+                           Widgets::Font::Tiny);
+        break;
+    }
+    _drawnOffset = 0;
 }
 
-void TickerStateProvider::render(Adafruit_GFX &canvas)
+uint32_t TickerStateProvider::pageDurationMs(uint8_t page) const
 {
-    if (_text[0] == '\0')
-        return;
-    _shownOffset = panOffset(millis() - _pageStartMs);
-    const int16_t x = _textWidth <= Layout::kWidth ? (Layout::kWidth - _textWidth) / 2 : -_shownOffset;
-    Widgets::drawText(canvas, _font, x, _text, _color.to565());
+    static const uint32_t kWeights[kPagesPerSymbol] = {Config::kTickerNameMs, Config::kTickerPriceMs,
+                                                       Config::kTickerChangeMs};
+    // Same proportions as the defaults, scaled to the per-symbol time.
+    const uint32_t base = kWeights[page % kPagesPerSymbol] * _perSymbolMs / Config::kTickerSymbolMs;
+    const uint32_t pan = Widgets::panDurationMs(_label); // only the current page is asked
+    return pan > base ? pan : base;
+}
+
+void TickerStateProvider::renderPage(Adafruit_GFX &canvas, uint8_t page, uint32_t elapsedMs)
+{
+    (void)page;
+    _drawnOffset = Widgets::panOffset(_label, elapsedMs);
+    Widgets::drawLabel(canvas, _label, elapsedMs);
+}
+
+bool TickerStateProvider::pageNeedsRedraw(uint8_t page, uint32_t elapsedMs)
+{
+    (void)page;
+    return Widgets::panOffset(_label, elapsedMs) != _drawnOffset;
 }

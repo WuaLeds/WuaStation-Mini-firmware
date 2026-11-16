@@ -10,7 +10,7 @@
 class AlertStateProvider : public ScrollTextStateBase
 {
 public:
-    static constexpr uint8_t kPriority = 2;
+    static constexpr uint8_t kPriority = 3;
     static constexpr uint8_t kQueueSize = 4;
 
     explicit AlertStateProvider(Compositor &compositor)

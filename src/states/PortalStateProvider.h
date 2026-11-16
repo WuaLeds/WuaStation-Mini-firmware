@@ -9,7 +9,7 @@
 class PortalStateProvider : public ScrollTextStateBase
 {
 public:
-    static constexpr uint8_t kPriority = 1;
+    static constexpr uint8_t kPriority = 2; // above a pinned timer
 
     PortalStateProvider(Compositor &compositor, WifiService &wifi)
         : ScrollTextStateBase(compositor, "portal", 0, 0 /* endless */, kPriority), _wifi(wifi) {}

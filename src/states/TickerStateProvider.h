@@ -1,9 +1,9 @@
 #pragma once
 
-#include "config/Theme.h"
+#include "config/Config.h"
 #include "display/Widgets.h"
 #include "providers/ticker/BinanceTickerProvider.h"
-#include "states/StaticStateBase.h"
+#include "states/PagedStateBase.h"
 
 // =============================================================================
 //  Market ticker as fixed pages (no scrolling), for every configured symbol:
@@ -16,14 +16,16 @@
 //  3-letter names use the classic font, longer ones TinyFont; prices get as
 //  many decimals as fit and are abbreviated (K / M) when needed. A page that
 //  still does not fit (e.g. "MATIC") pans slowly instead of scrolling away.
+//
+//  "ticker:N" in the screens setting = N seconds per symbol.
 // =============================================================================
-class TickerStateProvider : public StaticStateBase
+class TickerStateProvider : public PagedStateBase
 {
 public:
     TickerStateProvider(Compositor &compositor, const BinanceTickerProvider &provider);
 
     bool canBeShown() const override { return _provider.hasData(); }
-    bool isFinished() const override { return _finished; }
+    void setDurationMs(uint32_t perSymbolMs) override { _perSymbolMs = perSymbolMs; }
 
     // Shortest text for `price` that fits the panel in TinyFont and stays
     // within Config::kTickerPriceMaxError. Returns false if nothing fits
@@ -31,37 +33,24 @@ public:
     static bool formatPrice(double price, char *out, size_t size);
     // "+2.3%", "-12%", "123%" ... (always fits).
     static void formatChange(float percent, char *out, size_t size);
+    // Trend / 24 h change color of a quote's price.
+    static uint16_t priceColor(const TickerQuote &quote);
 
 protected:
-    void onShow() override;
-    void tick() override;
-    void render(Adafruit_GFX &canvas) override;
+    uint8_t beginPages() override;
+    void enterPage(uint8_t page) override;
+    uint32_t pageDurationMs(uint8_t page) const override;
+    void renderPage(Adafruit_GFX &canvas, uint8_t page, uint32_t elapsedMs) override;
+    bool pageNeedsRedraw(uint8_t page, uint32_t elapsedMs) override;
 
 private:
-    enum class Page : uint8_t
-    {
-        Name,
-        Price,
-        Change
-    };
-
-    bool selectQuote(uint8_t from); // first quote with a price at index >= from
-    bool nextPage();                // false when every symbol was shown
-    void preparePage();
-    int16_t panOffset(uint32_t elapsedMs) const;
+    static constexpr uint8_t kPagesPerSymbol = 3; // name, price, change
 
     const BinanceTickerProvider &_provider;
     TickerSnapshot _snapshot{};
-    uint8_t _quote = 0;
-    Page _page = Page::Name;
-    bool _finished = false;
+    uint8_t _symbols[Config::kMaxTickers] = {}; // snapshot indexes with a price
+    uint32_t _perSymbolMs = Config::kTickerSymbolMs;
 
-    // Current page
-    char _text[24] = {};
-    Widgets::Font _font = Widgets::Font::Tiny;
-    Rgb _color = Theme::kTickerFlat;
-    int16_t _textWidth = 0;
-    int16_t _shownOffset = 0;
-    uint32_t _pageStartMs = 0;
-    uint32_t _pageDurationMs = 0;
+    Widgets::Label _label{};
+    int16_t _drawnOffset = 0;
 };
