@@ -47,7 +47,8 @@ drives the station through the ESPHome API the way Home Assistant does.
 
 - [ ] The station appears in *Settings › Devices & services* as discovered
       (ESPHome); *Configure* adds it.
-- [ ] Device page: model, firmware version (project 0.4), every entity.
+- [ ] Device page: manufacturer Wualeds, model WuaStation mini, firmware
+      version (project 0.4), every entity.
 - [ ] 🤖 Display light: on/off and brightness, mirrored on the settings page.
 - [ ] 🤖 Message text: changes the scrolling message.
 - [ ] 🤖 Screen select: shows the current screen, jumps to the chosen one.

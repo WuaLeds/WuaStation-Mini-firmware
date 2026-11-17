@@ -19,6 +19,8 @@ own as before and joins Home Assistant when wanted.
   reset buttons, events for the UP, DOWN and TOUCH buttons, indoor and outdoor
   sensors (temperature, humidity, pressure, chance of rain, UV index, air
   quality) and WiFi diagnostics. Actions `show_message` and `show_screen`.
+  The device page shows Wualeds as the manufacturer and WuaStation mini as
+  the model.
 - ESPHome dashboard adoption (`dashboard_import`) and OTA updates.
 - WiFi set over USB right after flashing (Improv).
 - Settings page: Home Assistant connection status and *Change WiFi network*.

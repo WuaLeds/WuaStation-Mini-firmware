@@ -195,7 +195,13 @@ reading, refreshed every 10 s.
 ## 🏡 Home Assistant
 
 The station shows up by itself in **Settings › Devices & services** (ESPHome
-discovery); click *Configure* and it is added. Nothing else to install.
+discovery); click *Configure* and it is added. Nothing else to install. Its
+device page reads **Wualeds · WuaStation mini** with the firmware version.
+
+Not listed? Add the **ESPHome** integration by hand with the station's IP
+(DOWN long press), port `6053` and no encryption key. Discovery needs Home
+Assistant on the same network as the station: in a virtual machine, use a
+bridged network adapter rather than NAT.
 
 | Entity | Type | What it does |
 | --- | --- | --- |
