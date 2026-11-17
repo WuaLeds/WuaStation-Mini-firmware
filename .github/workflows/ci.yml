@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main, dev]
 
+env:
+  ESPHOME_VERSION: "2026.10.2"
+  # Same version as the one in .clang-format: newer releases may format
+  # slightly differently.
+  CLANG_FORMAT_VERSION: "23.1.5"
+
 jobs:
   format:
     name: clang-format
@@ -16,45 +22,67 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
-      # Same version as the one in .clang-format: newer releases may format
-      # slightly differently.
       - name: Install clang-format
-        run: pip install clang-format==23.1.5
+        run: pip install "clang-format==$CLANG_FORMAT_VERSION"
 
       - name: Check formatting
         run: |
-          git ls-files 'src/*.h' 'src/*.cpp' | xargs clang-format --dry-run --Werror
+          git ls-files 'lib/*.h' 'lib/*.cpp' 'components/*.h' 'components/*.cpp' 'src/*.h' 'src/*.cpp' \
+            | xargs clang-format --dry-run --Werror
           echo "All sources match .clang-format."
 
-  build:
-    name: Build ${{ matrix.env }}
+  esphome:
+    name: ESPHome firmware
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        env: [c3_release, c3_debug, c3_bench]
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Cache PlatformIO
         uses: actions/cache@v4
         with:
           path: ~/.platformio
-          key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
+          key: ${{ runner.os }}-esphome-${{ env.ESPHOME_VERSION }}-${{ hashFiles('lib/WuaStationCore/library.json') }}
+          restore-keys: ${{ runner.os }}-esphome-${{ env.ESPHOME_VERSION }}-
+
+      - name: Install ESPHome
+        run: pip install "esphome==$ESPHOME_VERSION"
+
+      - name: Check versions
+        run: python tools/check_version.py
+
+      - name: Validate configuration
+        run: esphome -s components_source components config wuastation-mini.yaml > /dev/null
+
+      - name: Build
+        run: esphome -s components_source components compile wuastation-mini.yaml
+
+  bench:
+    name: Benchmark (PlatformIO)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini', 'lib/WuaStationCore/library.json') }}
           restore-keys: ${{ runner.os }}-pio-
 
       - name: Install PlatformIO Core
-        run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade platformio
+        run: pip install --upgrade platformio
 
-      - name: Build ${{ matrix.env }}
-        run: pio run -e ${{ matrix.env }}
+      - name: Build c3_bench
+        run: pio run -e c3_bench

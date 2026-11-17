@@ -71,7 +71,7 @@ svg{display:block}
 .card h2{font-size:1.15rem;display:flex;align-items:center;gap:10px}
 .card h2 i{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--gradient-brand);color:var(--on-brand);font-style:normal}
 .card h2 i svg{width:17px;height:17px}
-.card>p.hint{color:var(--text-muted);font-size:.9rem;margin:6px 0 14px}
+.card>p.hint,.card p.hint{color:var(--text-muted);font-size:.9rem;margin:6px 0 14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
 .field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .field>span{font-weight:600;font-size:.9rem}
@@ -202,7 +202,6 @@ footer a{color:var(--text-muted)}
       <div class="stat"><small data-i="stAddr"></small><span id="st-ip">–</span></div>
       <div class="stat"><small data-i="stSensor"></small><span id="st-sensor">–</span></div>
     </div>
-    <div class="banner" id="portal-banner"><span data-i="portalBanner"></span> <a href="/wifi" data-i="wifiSetup"></a></div>
   </section>
 
   <section class="card">
@@ -277,9 +276,11 @@ footer a{color:var(--text-muted)}
       <div class="stat"><small data-i="firmware"></small><span id="st-fw">–</span></div>
       <div class="stat"><small>Host</small><span id="st-host">–</span></div>
       <div class="stat"><small data-i="uptime"></small><span id="st-up">–</span></div>
+      <div class="stat"><small>Home Assistant</small><span id="st-ha">–</span></div>
     </div>
+    <p class="hint" id="ha-hint" data-i="haHint" hidden></p>
     <div class="actions">
-      <a class="btn btn-ghost" href="/wifi" data-i="wifiSetup"></a>
+      <button type="button" class="btn btn-ghost" id="wifi-forget" data-i="wifiChange"></button>
       <button type="button" class="btn btn-ghost" id="restart" data-i="restart"></button>
     </div>
   </section>
@@ -305,7 +306,6 @@ const I18N = {
   es: {
     heroText: "Configurá qué muestra tu estación, en qué orden y por cuánto tiempo.",
     stClock: "Hora del equipo", stAddr: "Dirección", stSensor: "Sensor",
-    portalBanner: "Modo configuración: la estación todavía no está conectada a tu WiFi.",
     screensTitle: "Pantallas",
     screensHint: "Activá las que quieras ver, ordenalas con las flechas y elegí cuántos segundos dura cada una (vacío = valor por defecto). Las que no tienen datos se saltan solas.",
     s_time: "Hora", d_time: "HH:MM con los dos puntos titilando",
@@ -331,12 +331,17 @@ const I18N = {
     msg: "Mensaje", msgHint: "Texto que se desplaza en la pantalla. Vacío lo oculta.",
     displayTitle: "Pantalla y sensor", bright: "Brillo", brightHint: "Se aplica al instante",
     toff: "Ajuste de temperatura (°C)", toffHint: "Corrige el calor de la carcasa, ej.: -1.5",
-    deviceTitle: "Equipo", firmware: "Firmware", uptime: "Encendido", wifiSetup: "Configurar WiFi", restart: "Reiniciar",
+    deviceTitle: "Equipo", firmware: "Firmware", uptime: "Encendido", restart: "Reiniciar",
+    haOn: "Conectado", haOff: "No conectado",
+    haHint: "Para agregarla, en Home Assistant: Ajustes › Dispositivos y servicios. La estación aparece sola (ESPHome).",
+    wifiChange: "Cambiar red WiFi",
+    wifiConfirm: "La estación olvida la red WiFi actual y abre su WiFi de configuración. ¿Continuar?",
+    wifiTitle: "Cambiando de red", wifiText: "Desde el celular, conectate a la red {ap} (contraseña {pass}) y elegí la nueva red WiFi.",
+    savedLive: "Guardado",
     unsaved: "Tenés cambios sin guardar", discard: "Descartar", save: "Guardar",
     saving: "Guardando…", saveFail: "No se pudo guardar. Revisá la conexión.",
     savedTitle: "Guardado", savedText: "La estación se está reiniciando para aplicar los cambios. Esta página se recarga sola.",
     restartTitle: "Reiniciando", restartConfirm: "¿Reiniciar la estación?",
-    portalText: "Si estabas conectado al WiFi de la estación, volvé a conectarte a ella.",
     loadFail: "No se pudo leer la configuración.",
     errTickers: "Solo letras y números, hasta 4 pares", errCoord: "Latitud -90…90 y longitud -180…180, las dos juntas",
     errSeconds: "Entre 1 y {max} segundos", errNoScreens: "Activá al menos una pantalla",
@@ -346,7 +351,6 @@ const I18N = {
   en: {
     heroText: "Choose what your station shows, in which order and for how long.",
     stClock: "Device time", stAddr: "Address", stSensor: "Sensor",
-    portalBanner: "Setup mode: the station is not connected to your WiFi yet.",
     screensTitle: "Screens",
     screensHint: "Turn on the ones you want, sort them with the arrows and set how many seconds each one lasts (empty = default). Screens without data are skipped automatically.",
     s_time: "Time", d_time: "HH:MM with a blinking colon",
@@ -372,12 +376,17 @@ const I18N = {
     msg: "Message", msgHint: "Text that scrolls on the display. Empty hides it.",
     displayTitle: "Display and sensor", bright: "Brightness", brightHint: "Applied instantly",
     toff: "Temperature offset (°C)", toffHint: "Compensates enclosure heat, e.g. -1.5",
-    deviceTitle: "Device", firmware: "Firmware", uptime: "Uptime", wifiSetup: "WiFi setup", restart: "Restart",
+    deviceTitle: "Device", firmware: "Firmware", uptime: "Uptime", restart: "Restart",
+    haOn: "Connected", haOff: "Not connected",
+    haHint: "To add it, in Home Assistant: Settings › Devices & services. The station shows up by itself (ESPHome).",
+    wifiChange: "Change WiFi network",
+    wifiConfirm: "The station forgets the current WiFi network and opens its setup WiFi. Continue?",
+    wifiTitle: "Changing network", wifiText: "From your phone, join the {ap} network (password {pass}) and pick the new WiFi network.",
+    savedLive: "Saved",
     unsaved: "You have unsaved changes", discard: "Discard", save: "Save",
     saving: "Saving…", saveFail: "Could not save. Check the connection.",
     savedTitle: "Saved", savedText: "The station is restarting to apply the changes. This page reloads by itself.",
     restartTitle: "Restarting", restartConfirm: "Restart the station?",
-    portalText: "If you were on the station's own WiFi, join it again.",
     loadFail: "Could not read the settings.",
     errTickers: "Letters and digits only, up to 4 pairs", errCoord: "Latitude -90…90 and longitude -180…180, both together",
     errSeconds: "Between 1 and {max} seconds", errNoScreens: "Turn on at least one screen",
@@ -661,7 +670,12 @@ function renderStatus(st) {
   const up = st.uptime | 0;
   const d = Math.floor(up / 86400), h = Math.floor(up % 86400 / 3600), m = Math.floor(up % 3600 / 60);
   $("#st-up").textContent = (d ? d + "d " : "") + h + "h " + String(m).padStart(2, "0") + "m";
-  $("#portal-banner").classList.toggle("show", !!st.portal && !st.connected);
+  const ha = $("#st-ha");
+  ha.textContent = "";
+  const haDot = document.createElement("i");
+  haDot.className = "dot" + (st.homeAssistant ? "" : " off");
+  ha.append(haDot, st.homeAssistant ? t("haOn") : t("haOff"));
+  $("#ha-hint").hidden = !!st.homeAssistant;
 }
 
 function fill(c) {
@@ -774,8 +788,6 @@ function showOverlay(title, text) {
 }
 
 function waitForRestart() {
-  const portal = cfg && cfg.portal && !cfg.connected;
-  if (portal) { $("#ov-text").textContent += " " + t("portalText"); }
   const started = Date.now();
   const poll = async () => {
     try { await getJson("/api/status"); if (Date.now() - started > 8000) { location.reload(); return; } } catch (e) {}
@@ -790,10 +802,22 @@ async function save() {
   changed();
   $("#save-msg").textContent = t("saving");
   try {
-    await getJson("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(collect()) });
+    const res = await getJson("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(collect()) });
     initial = JSON.stringify(collect());
-    showOverlay(t("savedTitle"), t("savedText"));
-    waitForRestart();
+    if (res.restart) {
+      // City or tickers changed: the station restarts to load them.
+      showOverlay(t("savedTitle"), t("savedText"));
+      waitForRestart();
+      return;
+    }
+    // Applied live: refresh from the station (sanitized values).
+    busy = false;
+    setTimeout(async () => {
+      try { cfg = await getJson("/api/settings"); fill(cfg); renderStatus(cfg); initial = JSON.stringify(collect()); } catch (e) {}
+      changed();
+      const msg = $("#save-msg");
+      msg.textContent = t("savedLive");
+    }, 400);
   } catch (e) {
     busy = false;
     changed();
@@ -837,6 +861,12 @@ $("#tz-sel").addEventListener("change", () => {
 $("#bright").addEventListener("input", () => { $("#bright-out").textContent = $("#bright").value; sendBrightness(); });
 $("#save").onclick = save;
 $("#discard").onclick = () => { fill(cfg); changed(); sendBrightness(); };
+$("#wifi-forget").onclick = async () => {
+  if (!confirm(t("wifiConfirm"))) return;
+  busy = true;
+  try { await fetch("/api/wifi/forget", { method: "POST" }); } catch (e) {}
+  showOverlay(t("wifiTitle"), t("wifiText").replace("{ap}", (cfg && cfg.apName) || "WuaStation").replace("{pass}", (cfg && cfg.apPassword) || ""));
+};
 $("#restart").onclick = async () => {
   if (!confirm(t("restartConfirm"))) return;
   busy = true;

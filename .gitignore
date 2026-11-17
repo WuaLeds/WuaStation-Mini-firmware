@@ -8,3 +8,7 @@
 
 # Convenience copies of the firmware image for drag-and-drop flashing
 *.uf2
+
+# ESPHome build output and local secrets
+.esphome/
+secrets.yaml
