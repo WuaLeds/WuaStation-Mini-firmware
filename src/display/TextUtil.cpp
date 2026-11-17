@@ -11,6 +11,7 @@ namespace TextUtil
         };
 
         // Latin-1 -> CP437. Letters missing from CP437 fall back to ASCII.
+        // clang-format off
         const Mapping kMap[] = {
             {0x00A0, ' '},  {0x00A1, 0xAD}, {0x00A2, 0x9B}, {0x00A3, 0x9C},
             {0x00A5, 0x9D}, {0x00AA, 0xA6}, {0x00AB, 0xAE}, {0x00B0, 0xF8},
@@ -33,6 +34,7 @@ namespace TextUtil
             {0x00FA, 0xA3}, {0x00FB, 0x96}, {0x00FC, 0x81}, {0x00FF, 0x98},
             {0x20AC, 'E'}, // euro sign
         };
+        // clang-format on
 
         uint8_t mapCodepoint(uint32_t cp)
         {
@@ -59,9 +61,21 @@ namespace TextUtil
                 out += static_cast<char>(*p++);
                 continue;
             }
-            if ((*p & 0xE0) == 0xC0) { cp = *p & 0x1F; extra = 1; }
-            else if ((*p & 0xF0) == 0xE0) { cp = *p & 0x0F; extra = 2; }
-            else if ((*p & 0xF8) == 0xF0) { cp = *p & 0x07; extra = 3; }
+            if ((*p & 0xE0) == 0xC0)
+            {
+                cp = *p & 0x1F;
+                extra = 1;
+            }
+            else if ((*p & 0xF0) == 0xE0)
+            {
+                cp = *p & 0x0F;
+                extra = 2;
+            }
+            else if ((*p & 0xF8) == 0xF0)
+            {
+                cp = *p & 0x07;
+                extra = 3;
+            }
             else
             {
                 // Stray byte (not UTF-8): keep it as-is, it may already be CP437.

@@ -38,7 +38,7 @@ private:
     bool fetchQuote(TickerQuote &q, int &code);
     bool request(const String &pathAndQuery, JsonDocument &doc, const JsonDocument *filter, int &code);
 
-    TickerSnapshot _work{};    // owned by the network task
+    TickerSnapshot _work{}; // owned by the network task
     bool _metaDone[Config::kMaxTickers] = {};
     uint8_t _host = 0;
     SharedState<TickerSnapshot> _shared;

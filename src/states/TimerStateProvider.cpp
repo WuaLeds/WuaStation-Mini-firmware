@@ -77,14 +77,9 @@ bool TimerStateProvider::onButton(ButtonId id, ButtonEvent event)
                 start(pomodoroSelected() ? Phase::Work : Phase::Countdown);
             }
             break;
-        case Run::Running:
-            event == ButtonEvent::Click ? pause() : stop();
-            break;
-        case Run::Paused:
-            event == ButtonEvent::Click ? resume() : stop();
-            break;
-        case Run::Ringing:
-            break;
+        case Run::Running: event == ButtonEvent::Click ? pause() : stop(); break;
+        case Run::Paused: event == ButtonEvent::Click ? resume() : stop(); break;
+        case Run::Ringing: break;
         }
         invalidate();
         return true;
@@ -107,15 +102,11 @@ uint32_t TimerStateProvider::phaseMs(Phase phase) const
 {
     switch (phase)
     {
-    case Phase::Work:
-        return Config::kPomodoroWorkMin * kMinuteMs;
-    case Phase::ShortBreak:
-        return Config::kPomodoroShortBreakMin * kMinuteMs;
-    case Phase::LongBreak:
-        return Config::kPomodoroLongBreakMin * kMinuteMs;
+    case Phase::Work: return Config::kPomodoroWorkMin * kMinuteMs;
+    case Phase::ShortBreak: return Config::kPomodoroShortBreakMin * kMinuteMs;
+    case Phase::LongBreak: return Config::kPomodoroLongBreakMin * kMinuteMs;
     case Phase::Countdown:
-    default:
-        return Config::kTimerPresetsMin[_preset < kPresetCount ? _preset : 0] * kMinuteMs;
+    default: return Config::kTimerPresetsMin[_preset < kPresetCount ? _preset : 0] * kMinuteMs;
     }
 }
 
@@ -124,8 +115,7 @@ void TimerStateProvider::start(Phase phase)
     _phase = phase;
     _run = Run::Running;
     _endMs = millis() + phaseMs(phase);
-    LOG_INFO("Timer: phase %u, %lu s", static_cast<unsigned>(phase),
-             static_cast<unsigned long>(phaseMs(phase) / 1000));
+    LOG_INFO("Timer: phase %u, %lu s", static_cast<unsigned>(phase), static_cast<unsigned long>(phaseMs(phase) / 1000));
 }
 
 void TimerStateProvider::pause()
@@ -198,14 +188,11 @@ Rgb TimerStateProvider::color() const
         return pomodoroSelected() ? Theme::kPomodoroWork : Theme::kTimerCountdown;
     switch (_phase)
     {
-    case Phase::Work:
-        return Theme::kPomodoroWork;
+    case Phase::Work: return Theme::kPomodoroWork;
     case Phase::ShortBreak:
-    case Phase::LongBreak:
-        return Theme::kPomodoroBreak;
+    case Phase::LongBreak: return Theme::kPomodoroBreak;
     case Phase::Countdown:
-    default:
-        return Theme::kTimerCountdown;
+    default: return Theme::kTimerCountdown;
     }
 }
 
@@ -223,21 +210,14 @@ uint32_t TimerStateProvider::renderKey() const
 {
     // Everything that changes the picture, packed in one number.
     const uint32_t now = millis();
-    uint32_t key = static_cast<uint32_t>(_run) | (static_cast<uint32_t>(_phase) << 2) |
-                   (static_cast<uint32_t>(_preset) << 4);
+    uint32_t key =
+        static_cast<uint32_t>(_run) | (static_cast<uint32_t>(_phase) << 2) | (static_cast<uint32_t>(_preset) << 4);
     switch (_run)
     {
-    case Run::Running:
-        key |= ((remainingMs() + 999) / 1000) << 9;
-        break;
-    case Run::Paused:
-        key |= ((now / kPausedBlinkMs) & 1) << 9;
-        break;
-    case Run::Ringing:
-        key |= (((now - _ringStartMs) / Config::kAlarmBlinkMs) & 1) << 9;
-        break;
-    case Run::Idle:
-        break;
+    case Run::Running: key |= ((remainingMs() + 999) / 1000) << 9; break;
+    case Run::Paused: key |= ((now / kPausedBlinkMs) & 1) << 9; break;
+    case Run::Ringing: key |= (((now - _ringStartMs) / Config::kAlarmBlinkMs) & 1) << 9; break;
+    case Run::Idle: break;
     }
     return key;
 }
@@ -283,7 +263,6 @@ void TimerStateProvider::render(Adafruit_GFX &canvas)
         return; // blink while paused
 
     const uint32_t seconds = (remainingMs() + 999) / 1000;
-    snprintf(text, sizeof(text), "%02u:%02u", static_cast<unsigned>(seconds / 60),
-             static_cast<unsigned>(seconds % 60));
+    snprintf(text, sizeof(text), "%02u:%02u", static_cast<unsigned>(seconds / 60), static_cast<unsigned>(seconds % 60));
     TinyFont::drawCentered(canvas, text, c);
 }

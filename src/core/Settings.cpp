@@ -110,15 +110,14 @@ void SettingsStore::sanitize(Settings &s)
     if (s.alarm[0] != '\0')
     {
         if (parseAlarm(s.alarm, h, m))
-            snprintf(s.alarm, sizeof(s.alarm), "%02u:%02u",
-                     static_cast<unsigned>(h), static_cast<unsigned>(m));
+            snprintf(s.alarm, sizeof(s.alarm), "%02u:%02u", static_cast<unsigned>(h), static_cast<unsigned>(m));
         else
             s.alarm[0] = '\0';
     }
 
     float lat, lon;
-    if (!parseFloat(s.latitude, lat) || !parseFloat(s.longitude, lon) ||
-        lat < -90.0f || lat > 90.0f || lon < -180.0f || lon > 180.0f)
+    if (!parseFloat(s.latitude, lat) || !parseFloat(s.longitude, lon) || lat < -90.0f || lat > 90.0f || lon < -180.0f ||
+        lon > 180.0f)
     {
         s.latitude[0] = '\0';
         s.longitude[0] = '\0';
@@ -162,9 +161,8 @@ void SettingsStore::begin()
 
     sanitize(_settings);
 
-    LOG_INFO("Settings: tz=%s city=%s lat=%s lon=%s tickers=%s alarm=%s bright=%u",
-             _settings.timezone, _settings.city, _settings.latitude, _settings.longitude,
-             _settings.tickers, _settings.alarm, _settings.brightness);
+    LOG_INFO("Settings: tz=%s city=%s lat=%s lon=%s tickers=%s alarm=%s bright=%u", _settings.timezone, _settings.city,
+             _settings.latitude, _settings.longitude, _settings.tickers, _settings.alarm, _settings.brightness);
     LOG_INFO("Screens: %s | sensor offset %.1f C | %s AQI", _settings.screens, _settings.tempOffsetC,
              _settings.europeanAqi ? "European" : "US");
     if (_locationZone[0])

@@ -12,30 +12,18 @@ namespace
 {
     constexpr uint8_t kBrightnessLevelCount = sizeof(Config::kBrightnessLevels) / sizeof(Config::kBrightnessLevels[0]);
 
-    const CalendarStateProvider::Date kCelebrationDate{
-        Config::kCelebrationYear, Config::kCelebrationMonth, Config::kCelebrationDay};
+    const CalendarStateProvider::Date kCelebrationDate{Config::kCelebrationYear, Config::kCelebrationMonth,
+                                                       Config::kCelebrationDay};
 }
 
 App::App()
-    : _compositor(_display),
-      _controller(_display, _compositor),
-      _web(_settings, _wifi, _time, _sensors),
-      _btnUp(Pins::kButtonUp, false, INPUT_PULLUP),
-      _btnDown(Pins::kButtonDown, false, INPUT_PULLUP),
-      _btnTouch(Pins::kTouch, true, INPUT),
-      _splashState(_compositor),
-      _statusState(_compositor, _wifi, _time),
-      _timeState(_compositor, _time),
-      _dateState(_compositor, _time),
-      _weatherState(_compositor, _weather),
-      _forecastState(_compositor, _weather),
-      _indoorState(_compositor, _sensors),
-      _tickerState(_compositor, _ticker),
-      _messageState(_compositor, _settings),
-      _celebrationState(_compositor, _time, kCelebrationDate),
-      _timerState(_compositor),
-      _portalState(_compositor, _wifi),
-      _alertState(_compositor),
+    : _compositor(_display), _controller(_display, _compositor), _web(_settings, _wifi, _time, _sensors),
+      _btnUp(Pins::kButtonUp, false, INPUT_PULLUP), _btnDown(Pins::kButtonDown, false, INPUT_PULLUP),
+      _btnTouch(Pins::kTouch, true, INPUT), _splashState(_compositor), _statusState(_compositor, _wifi, _time),
+      _timeState(_compositor, _time), _dateState(_compositor, _time), _weatherState(_compositor, _weather),
+      _forecastState(_compositor, _weather), _indoorState(_compositor, _sensors), _tickerState(_compositor, _ticker),
+      _messageState(_compositor, _settings), _celebrationState(_compositor, _time, kCelebrationDate),
+      _timerState(_compositor), _portalState(_compositor, _wifi), _alertState(_compositor),
       _alarmState(_compositor, _time, _settings)
 {
 }
@@ -279,8 +267,8 @@ void App::showInfo()
     char buf[112];
     if (_wifi.isConnected())
     {
-        snprintf(buf, sizeof(buf), Strings::kInfoOnlineFmt, _wifi.ip().toString().c_str(),
-                 _wifi.hostname(), WUA_FIRMWARE_VERSION);
+        snprintf(buf, sizeof(buf), Strings::kInfoOnlineFmt, _wifi.ip().toString().c_str(), _wifi.hostname(),
+                 WUA_FIRMWARE_VERSION);
         _alertState.push(buf, Theme::kInfo, 1);
     }
     else if (!_wifi.portalActive())
@@ -305,8 +293,7 @@ void App::handleSystemEvents()
     {
         WeatherData weather;
         _weatherZoneVersion = _weather.read(weather);
-        if (weather.valid && weather.hasTimezone &&
-            _time.applyLocationZone(weather.zoneName, weather.utcOffsetS))
+        if (weather.valid && weather.hasTimezone && _time.applyLocationZone(weather.zoneName, weather.utcOffsetS))
             _settings.rememberLocationZone(_time.posixTimezone());
     }
 

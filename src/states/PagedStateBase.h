@@ -15,7 +15,9 @@ class PagedStateBase : public StaticStateBase
 {
 public:
     PagedStateBase(Compositor &compositor, const char *id, uint32_t durationMs, uint8_t priority = 0)
-        : StaticStateBase(compositor, id, durationMs, priority) {}
+        : StaticStateBase(compositor, id, durationMs, priority)
+    {
+    }
 
     bool isFinished() const override { return _finished; }
 

@@ -15,23 +15,15 @@ const Icons::Icon &WeatherStateProvider::iconFor(WeatherCondition condition, boo
 {
     switch (condition)
     {
-    case WeatherCondition::Clear:
-        return isDay ? Icons::kSun : Icons::kMoon;
-    case WeatherCondition::PartlyCloudy:
-        return isDay ? Icons::kPartlyCloudy : Icons::kPartlyCloudyNight;
-    case WeatherCondition::Cloudy:
-        return Icons::kCloud;
-    case WeatherCondition::Fog:
-        return Icons::kFog;
-    case WeatherCondition::Rain:
-        return Icons::kRain;
-    case WeatherCondition::Snow:
-        return Icons::kSnow;
-    case WeatherCondition::Thunderstorm:
-        return Icons::kThunder;
+    case WeatherCondition::Clear: return isDay ? Icons::kSun : Icons::kMoon;
+    case WeatherCondition::PartlyCloudy: return isDay ? Icons::kPartlyCloudy : Icons::kPartlyCloudyNight;
+    case WeatherCondition::Cloudy: return Icons::kCloud;
+    case WeatherCondition::Fog: return Icons::kFog;
+    case WeatherCondition::Rain: return Icons::kRain;
+    case WeatherCondition::Snow: return Icons::kSnow;
+    case WeatherCondition::Thunderstorm: return Icons::kThunder;
     case WeatherCondition::Unknown:
-    default:
-        return Icons::kUnknown;
+    default: return Icons::kUnknown;
     }
 }
 
@@ -70,8 +62,7 @@ void WeatherStateProvider::render(Adafruit_GFX &canvas)
     if (_phase == 0)
     {
         Widgets::formatTemperature(_data.temperatureC, text, sizeof(text));
-        Widgets::iconAndValue(canvas, iconFor(_data.condition, _data.isDay), text,
-                              Theme::kWeatherTemp.to565());
+        Widgets::iconAndValue(canvas, iconFor(_data.condition, _data.isDay), text, Theme::kWeatherTemp.to565());
     }
     else
     {

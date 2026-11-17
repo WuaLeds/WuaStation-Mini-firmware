@@ -8,8 +8,8 @@
 #include "display/TextUtil.h"
 #include "net/HttpJson.h"
 
-void OpenMeteoWeatherProvider::configure(const char *city, bool hasCoordinates,
-                                         float latitude, float longitude, bool europeanAqi)
+void OpenMeteoWeatherProvider::configure(const char *city, bool hasCoordinates, float latitude, float longitude,
+                                         bool europeanAqi)
 {
     _europeanAqi = europeanAqi;
     _hasCoordinates = hasCoordinates;
@@ -107,7 +107,7 @@ bool OpenMeteoWeatherProvider::fetchForecast()
     filter["daily"]["temperature_2m_min"] = true;
     filter["daily"]["precipitation_probability_max"] = true;
     filter["daily"]["uv_index_max"] = true;
-    filter["timezone"] = true;           // timezone=auto: the location's own zone
+    filter["timezone"] = true; // timezone=auto: the location's own zone
     filter["utc_offset_seconds"] = true;
 
     JsonDocument doc;
@@ -150,9 +150,9 @@ bool OpenMeteoWeatherProvider::fetchForecast()
     _work.hasUv = !uv.isNull();
     _work.uvMax = uv | 0.0f;
 
-    LOG_DEBUG("Weather: %.1f C, %u %%, code %u, %s | max %.1f min %.1f rain %u %% uv %.1f",
-              _work.temperatureC, _work.humidity, code, _work.isDay ? "day" : "night", _work.maxC,
-              _work.minC, _work.rainChance, _work.uvMax);
+    LOG_DEBUG("Weather: %.1f C, %u %%, code %u, %s | max %.1f min %.1f rain %u %% uv %.1f", _work.temperatureC,
+              _work.humidity, code, _work.isDay ? "day" : "night", _work.maxC, _work.minC, _work.rainChance,
+              _work.uvMax);
     return true;
 }
 
@@ -184,6 +184,7 @@ void OpenMeteoWeatherProvider::fetchAirQuality()
 // WMO weather interpretation codes, as used by Open-Meteo.
 WeatherCondition OpenMeteoWeatherProvider::conditionFromWmo(uint16_t code)
 {
+    // clang-format off
     switch (code)
     {
     case 0:
@@ -208,4 +209,5 @@ WeatherCondition OpenMeteoWeatherProvider::conditionFromWmo(uint16_t code)
     default:
         return WeatherCondition::Unknown;
     }
+    // clang-format on
 }

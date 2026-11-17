@@ -32,13 +32,12 @@ class SettingsServer
 public:
     struct Hooks
     {
-        std::function<void()> onSaved;               // settings persisted
-        std::function<void(uint8_t)> onBrightness;   // live brightness
+        std::function<void()> onSaved;             // settings persisted
+        std::function<void(uint8_t)> onBrightness; // live brightness
         std::function<void()> onRestart;
     };
 
-    SettingsServer(SettingsStore &settings, WifiService &wifi, const TimeService &time,
-                   const SensorManager &sensors);
+    SettingsServer(SettingsStore &settings, WifiService &wifi, const TimeService &time, const SensorManager &sensors);
 
     // Call before WifiService::begin().
     void begin(Hooks hooks);

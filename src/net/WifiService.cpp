@@ -67,8 +67,8 @@ void WifiService::handleConnected()
 {
     setState(State::Connected);
     _everConnected = true;
-    LOG_INFO("Connected to '%s', IP %s, RSSI %d dBm", WiFi.SSID().c_str(),
-             WiFi.localIP().toString().c_str(), WiFi.RSSI());
+    LOG_INFO("Connected to '%s', IP %s, RSSI %d dBm", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str(),
+             WiFi.RSSI());
 
     if (!_mdnsStarted && MDNS.begin(_hostname))
     {
@@ -132,8 +132,7 @@ void WifiService::loop()
 
     switch (_state)
     {
-    case State::Idle:
-        break;
+    case State::Idle: break;
 
     case State::Connecting:
         if (up)

@@ -7,8 +7,7 @@
 class SplashStateProvider : public ScrollTextStateBase
 {
 public:
-    explicit SplashStateProvider(Compositor &compositor)
-        : ScrollTextStateBase(compositor, "splash", 0, 1) {}
+    explicit SplashStateProvider(Compositor &compositor) : ScrollTextStateBase(compositor, "splash", 0, 1) {}
 
     bool canBeShown() const override { return !_done; }
 

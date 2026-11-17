@@ -2,8 +2,8 @@
 
 #include "config/Strings.h"
 
-CalendarStateProvider::CalendarStateProvider(Compositor &compositor, const TimeService &time,
-                                             const Date &target, const char *id, Rgb color)
+CalendarStateProvider::CalendarStateProvider(Compositor &compositor, const TimeService &time, const Date &target,
+                                             const char *id, Rgb color)
     : ScrollTextStateBase(compositor, id, 0, 1), _time(time), _target(target), _color(color)
 {
 }

@@ -29,7 +29,7 @@ struct TickerQuote
     double open;
     double high;
     double low;
-    float changePct; // 24 h change, percent
+    float changePct;  // 24 h change, percent
     PriceTrend trend; // vs. the previous sample
     QuoteStatus status;
     bool hasPrice;

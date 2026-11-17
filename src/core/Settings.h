@@ -10,9 +10,9 @@
 // =============================================================================
 struct Settings
 {
-    char timezone[48];  // "auto", zone name ("Buenos Aires", "Europe/Madrid") or POSIX TZ
-    char city[48];      // weather location, "City" or "City,CC"
-    char latitude[16];  // optional, overrides the city when both are set
+    char timezone[48]; // "auto", zone name ("Buenos Aires", "Europe/Madrid") or POSIX TZ
+    char city[48];     // weather location, "City" or "City,CC"
+    char latitude[16]; // optional, overrides the city when both are set
     char longitude[16];
     char tickers[64];   // Binance symbols, comma separated ("BTCUSDT,ETHUSDT")
     char alarm[8];      // "HH:MM", empty = disabled

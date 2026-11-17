@@ -60,17 +60,14 @@ void ForecastStateProvider::renderPage(Adafruit_GFX &canvas, uint8_t page, uint3
 
     case Page::Uv:
         snprintf(text, sizeof(text), "%d", static_cast<int>(lroundf(_data.uvMax)));
-        Widgets::tagAndValue(canvas, "UV", Theme::kUvTag.to565(), text,
-                             ColorScale::uvIndex(_data.uvMax).to565());
+        Widgets::tagAndValue(canvas, "UV", Theme::kUvTag.to565(), text, ColorScale::uvIndex(_data.uvMax).to565());
         break;
 
-    case Page::AirQuality:
-    {
+    case Page::AirQuality: {
         const bool european = _provider.europeanAqi();
         const uint16_t aqi = european ? _data.europeanAqi : _data.usAqi;
         snprintf(text, sizeof(text), "%u", static_cast<unsigned>(aqi));
-        Widgets::tagAndValue(canvas, "AQ", Theme::kAirTag.to565(), text,
-                             ColorScale::airQuality(aqi, european).to565());
+        Widgets::tagAndValue(canvas, "AQ", Theme::kAirTag.to565(), text, ColorScale::airQuality(aqi, european).to565());
         break;
     }
     }

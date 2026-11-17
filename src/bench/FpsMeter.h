@@ -9,7 +9,9 @@ class FpsMeter
 public:
     // intervalMs: measurement window. averageWindow: samples (0 = disabled).
     explicit FpsMeter(uint32_t intervalMs = 1000, uint8_t averageWindow = 0)
-        : _interval(intervalMs), _avgWindow(averageWindow > kMaxWindow ? kMaxWindow : averageWindow) {}
+        : _interval(intervalMs), _avgWindow(averageWindow > kMaxWindow ? kMaxWindow : averageWindow)
+    {
+    }
 
     // Call once per rendered frame.
     void frame()

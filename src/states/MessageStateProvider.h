@@ -8,7 +8,9 @@ class MessageStateProvider : public ScrollTextStateBase
 {
 public:
     MessageStateProvider(Compositor &compositor, const SettingsStore &settings)
-        : ScrollTextStateBase(compositor, "message", 0, 1), _settings(settings) {}
+        : ScrollTextStateBase(compositor, "message", 0, 1), _settings(settings)
+    {
+    }
 
     bool canBeShown() const override { return _settings.get().message[0] != '\0'; }
 

@@ -44,8 +44,7 @@ ButtonEvent Button::poll()
         }
     }
 
-    if (_stable && !_longFired && !_ignoreUntilRelease &&
-        now - _pressedAtMs >= Config::kLongPressMs)
+    if (_stable && !_longFired && !_ignoreUntilRelease && now - _pressedAtMs >= Config::kLongPressMs)
     {
         _longFired = true;
         return ButtonEvent::LongPress;

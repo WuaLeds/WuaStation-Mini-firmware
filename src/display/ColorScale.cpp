@@ -10,6 +10,7 @@ namespace ColorScale
             Rgb color;
         };
 
+        // clang-format off
         const Stop kTemperature[] = {
             {-10.0f, {90, 0, 255}},
             {0.0f, {0, 90, 255}},
@@ -19,6 +20,7 @@ namespace ColorScale
             {30.0f, {255, 90, 0}},
             {36.0f, {255, 0, 0}},
         };
+        // clang-format on
 
         uint8_t lerp(uint8_t a, uint8_t b, float t)
         {
@@ -38,8 +40,7 @@ namespace ColorScale
                 const Stop &a = kTemperature[i - 1];
                 const Stop &b = kTemperature[i];
                 const float t = (celsius - a.value) / (b.value - a.value);
-                return {lerp(a.color.r, b.color.r, t), lerp(a.color.g, b.color.g, t),
-                        lerp(a.color.b, b.color.b, t)};
+                return {lerp(a.color.r, b.color.r, t), lerp(a.color.g, b.color.g, t), lerp(a.color.b, b.color.b, t)};
             }
         }
         return kTemperature[n - 1].color;
@@ -58,6 +59,7 @@ namespace ColorScale
         return {180, 40, 255};
     }
 
+    // clang-format off
     Rgb airQuality(uint16_t aqi, bool european)
     {
         if (european)
@@ -76,4 +78,5 @@ namespace ColorScale
         if (aqi <= 300) return {160, 40, 200};     // very unhealthy
         return {150, 0, 40};                       // hazardous
     }
+    // clang-format on
 }

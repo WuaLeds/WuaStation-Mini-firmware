@@ -72,8 +72,7 @@ namespace Widgets
         TinyFont::draw(g, x, 0, value, color);
     }
 
-    void tagAndValue(Adafruit_GFX &g, const char *tag, uint16_t tagColor, const char *value,
-                     uint16_t valueColor)
+    void tagAndValue(Adafruit_GFX &g, const char *tag, uint16_t tagColor, const char *value, uint16_t valueColor)
     {
         int16_t x;
         if (placeValue(g.width(), TinyFont::textWidth(tag), TinyFont::textWidth(value), x))
@@ -120,8 +119,7 @@ namespace Widgets
     {
         if (label.text[0] == '\0')
             return;
-        const int16_t x = label.width <= g.width() ? (g.width() - label.width) / 2
-                                                   : -panOffset(label, elapsedMs);
+        const int16_t x = label.width <= g.width() ? (g.width() - label.width) / 2 : -panOffset(label, elapsedMs);
         drawText(g, label.font, x, label.text, label.color);
     }
 }

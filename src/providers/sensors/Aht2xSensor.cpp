@@ -14,8 +14,7 @@ namespace
 
 bool Aht2xSensor::readStatus(uint8_t &status)
 {
-    return I2cUtil::write(*_wire, kAddress, &kCmdStatus, 1) &&
-           I2cUtil::read(*_wire, kAddress, &status, 1);
+    return I2cUtil::write(*_wire, kAddress, &kCmdStatus, 1) && I2cUtil::read(*_wire, kAddress, &status, 1);
 }
 
 bool Aht2xSensor::probe(TwoWire &wire)

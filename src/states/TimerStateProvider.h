@@ -81,8 +81,8 @@ private:
     uint32_t _remainingMs = 0; // paused: what was left
     uint32_t _ringStartMs = 0;
 
-    bool _leaveNow = false;    // ask the controller to move on
-    bool _interacted = false;  // a button was pressed during this visit
+    bool _leaveNow = false;   // ask the controller to move on
+    bool _interacted = false; // a button was pressed during this visit
     uint32_t _lastInteractionMs = 0;
     uint32_t _shownKey = 0;
 };

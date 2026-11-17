@@ -16,7 +16,9 @@ class StaticStateBase : public IDisplayStateProvider
 {
 public:
     StaticStateBase(Compositor &compositor, const char *id, uint32_t durationMs, uint8_t priority = 0)
-        : _compositor(compositor), _id(id), _duration(durationMs), _priority(priority) {}
+        : _compositor(compositor), _id(id), _duration(durationMs), _priority(priority)
+    {
+    }
 
     const char *getId() const override { return _id; }
     uint32_t getDurationMs() const override { return _duration; }

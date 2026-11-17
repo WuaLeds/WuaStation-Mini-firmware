@@ -117,8 +117,7 @@ namespace TinyFont
         return x;
     }
 
-    void drawCentered(Adafruit_GFX &gfx, const char *text, uint16_t color,
-                      int16_t areaX, int16_t areaW, int16_t y)
+    void drawCentered(Adafruit_GFX &gfx, const char *text, uint16_t color, int16_t areaX, int16_t areaW, int16_t y)
     {
         if (areaW < 0)
             areaW = gfx.width() - areaX;

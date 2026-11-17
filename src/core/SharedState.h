@@ -11,8 +11,7 @@
 //  T must be trivially copyable (plain structs with char arrays, no String):
 //  the copy happens inside a short critical section.
 // =============================================================================
-template <class T>
-class SharedState
+template <class T> class SharedState
 {
     static_assert(std::is_trivially_copyable<T>::value,
                   "SharedState<T> requires a trivially copyable T (no String members)");

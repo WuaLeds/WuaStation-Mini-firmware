@@ -133,11 +133,10 @@ namespace ScreenConfig
         {
             const char *sep = i ? "," : "";
             const char *flag = slots[i].enabled ? "" : "-";
-            const int written =
-                slots[i].seconds > 0
-                    ? snprintf(spec + pos, size - pos, "%s%s%s:%u", sep, flag, name(slots[i].id),
-                               static_cast<unsigned>(slots[i].seconds))
-                    : snprintf(spec + pos, size - pos, "%s%s%s", sep, flag, name(slots[i].id));
+            const int written = slots[i].seconds > 0
+                                    ? snprintf(spec + pos, size - pos, "%s%s%s:%u", sep, flag, name(slots[i].id),
+                                               static_cast<unsigned>(slots[i].seconds))
+                                    : snprintf(spec + pos, size - pos, "%s%s%s", sep, flag, name(slots[i].id));
             if (written < 0 || static_cast<size_t>(written) >= size - pos)
             {
                 spec[pos] = '\0'; // drop the entry that did not fit whole

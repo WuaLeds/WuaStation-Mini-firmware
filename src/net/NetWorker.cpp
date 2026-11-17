@@ -50,8 +50,8 @@ void NetWorker::taskLoop()
 
             const uint32_t delayMs = job->run();
             _dueMs[i] = millis() + delayMs;
-            LOG_DEBUG("Job %s done, next in %lu ms (heap %u)", job->name(),
-                      static_cast<unsigned long>(delayMs), ESP.getFreeHeap());
+            LOG_DEBUG("Job %s done, next in %lu ms (heap %u)", job->name(), static_cast<unsigned long>(delayMs),
+                      ESP.getFreeHeap());
         }
 
         vTaskDelay(pdMS_TO_TICKS(100));

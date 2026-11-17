@@ -10,10 +10,7 @@ struct Rgb
     uint8_t g;
     uint8_t b;
 
-    constexpr uint16_t to565() const
-    {
-        return static_cast<uint16_t>(((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3));
-    }
+    constexpr uint16_t to565() const { return static_cast<uint16_t>(((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)); }
 };
 
 namespace Theme

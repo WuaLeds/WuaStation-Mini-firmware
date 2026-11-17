@@ -14,15 +14,15 @@
 namespace Config
 {
     // ---- Identity / WiFi ----------------------------------------------------
-    constexpr const char *kDeviceName = "WuaStation";     // AP: "WuaStation-XXXX"
-    constexpr const char *kHostnamePrefix = "wuastation"; // "wuastation-xxxx.local"
+    constexpr const char *kDeviceName = "WuaStation";      // AP: "WuaStation-XXXX"
+    constexpr const char *kHostnamePrefix = "wuastation";  // "wuastation-xxxx.local"
     constexpr const char *kPortalPassword = "WuaLeds2025"; // >= 8 chars, "" = open AP
 
-    constexpr uint32_t kWifiConnectTimeoutMs = 20000;  // boot connect attempt
-    constexpr uint32_t kPortalTimeoutMs = 180000;      // AP portal lifetime (only if credentials exist)
-    constexpr uint32_t kOfflineAfterMs = 30000;        // lost link -> "offline"
-    constexpr uint32_t kReconnectIntervalMs = 30000;   // retry period while offline
-    constexpr bool kWebPortalOnStation = true;         // settings page on the LAN IP
+    constexpr uint32_t kWifiConnectTimeoutMs = 20000; // boot connect attempt
+    constexpr uint32_t kPortalTimeoutMs = 180000;     // AP portal lifetime (only if credentials exist)
+    constexpr uint32_t kOfflineAfterMs = 30000;       // lost link -> "offline"
+    constexpr uint32_t kReconnectIntervalMs = 30000;  // retry period while offline
+    constexpr bool kWebPortalOnStation = true;        // settings page on the LAN IP
 
     // ---- Defaults for the user settings ------------------------------------
     // "auto": the clock follows the weather city. Otherwise a zone name
@@ -50,7 +50,7 @@ namespace Config
     constexpr uint32_t kSensorPollMs = 5000;
     constexpr uint32_t kSensorReprobeMs = 15000; // look for a hot-plugged sensor
     constexpr uint8_t kSensorMaxFailures = 3;
-    constexpr float kSensorTempOffsetC = 0.0f;   // default; editable from the settings page
+    constexpr float kSensorTempOffsetC = 0.0f; // default; editable from the settings page
     constexpr float kSensorTempOffsetMaxC = 10.0f;
 
     // ---- Screens (rotation) -------------------------------------------------
@@ -65,16 +65,16 @@ namespace Config
     constexpr uint32_t kWeatherScreenMs = 8000;
     constexpr uint32_t kForecastScreenMs = 10000; // shared by its pages
     constexpr uint32_t kIndoorScreenMs = 9000;
-    constexpr uint32_t kTimerScreenMs = 4000;     // timer screen while idle
+    constexpr uint32_t kTimerScreenMs = 4000; // timer screen while idle
     constexpr uint32_t kStatusScreenMs = 4000;
     constexpr uint32_t kMaxScreenSeconds = 600;
 
-    constexpr uint16_t kScrollSpeedMs = 40;      // ms per pixel
+    constexpr uint16_t kScrollSpeedMs = 40; // ms per pixel
     constexpr uint16_t kAlertScrollSpeedMs = 30;
     constexpr uint8_t kAlertLoops = 2;
-    constexpr uint16_t kFadeMs = 300;            // crossfade between static screens
+    constexpr uint16_t kFadeMs = 300; // crossfade between static screens
     constexpr uint16_t kFadeStepMs = 20;
-    constexpr uint32_t kPanHoldMs = 700;         // a page wider than 18 px pans slowly
+    constexpr uint32_t kPanHoldMs = 700; // a page wider than 18 px pans slowly
 
     // ---- Ticker: fixed pages per symbol, name -> price -> 24 h change ------
     // "ticker:N" in the screens setting = N seconds per symbol, split in the
@@ -90,7 +90,7 @@ namespace Config
 
     // ---- Timer / pomodoro ---------------------------------------------------
     constexpr uint8_t kTimerPresetsMin[] = {1, 3, 5, 10, 15, 20, 30, 45, 60, 90}; // then pomodoro
-    constexpr uint8_t kTimerDefaultPreset = 2; // index in kTimerPresetsMin (5 min)
+    constexpr uint8_t kTimerDefaultPreset = 2;                                    // index in kTimerPresetsMin (5 min)
     constexpr uint8_t kPomodoroWorkMin = 25;
     constexpr uint8_t kPomodoroShortBreakMin = 5;
     constexpr uint8_t kPomodoroLongBreakMin = 15;

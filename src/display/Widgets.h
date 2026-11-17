@@ -29,8 +29,7 @@ namespace Widgets
     void iconAndValue(Adafruit_GFX &g, const Icons::Icon &icon, const char *value, uint16_t color);
 
     // Same layout with a short TinyFont tag instead of an icon ("UV 7").
-    void tagAndValue(Adafruit_GFX &g, const char *tag, uint16_t tagColor, const char *value,
-                     uint16_t valueColor);
+    void tagAndValue(Adafruit_GFX &g, const char *tag, uint16_t tagColor, const char *value, uint16_t valueColor);
 
     // "23°", "-5°", "-12" (no room for the degree sign below -9).
     void formatTemperature(float celsius, char *out, size_t size);

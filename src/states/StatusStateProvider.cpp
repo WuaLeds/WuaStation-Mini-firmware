@@ -34,8 +34,7 @@ void StatusStateProvider::render(Adafruit_GFX &canvas)
     const bool connected = _wifi.isConnected();
     const bool offline = _wifi.state() == WifiService::State::Offline;
 
-    const Rgb iconColor = offline ? Theme::kWifiOffline
-                                  : (connected ? Theme::kWifiSyncing : Theme::kWifiConnecting);
+    const Rgb iconColor = offline ? Theme::kWifiOffline : (connected ? Theme::kWifiSyncing : Theme::kWifiConnecting);
     Icons::drawTinted(canvas, Icons::kWifi, 0, 0, iconColor.to565());
 
     if (offline)

@@ -5,8 +5,7 @@
 #include "core/Logger.h"
 #include "display/TinyFont.h"
 
-AlarmStateProvider::AlarmStateProvider(Compositor &compositor, const TimeService &time,
-                                       const SettingsStore &settings)
+AlarmStateProvider::AlarmStateProvider(Compositor &compositor, const TimeService &time, const SettingsStore &settings)
     : StaticStateBase(compositor, "alarm", 0, kPriority), _time(time), _settings(settings)
 {
 }

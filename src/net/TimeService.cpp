@@ -44,8 +44,8 @@ bool TimeService::applyLocationZone(const char *ianaName, int32_t utcOffsetSecon
     if (strcmp(posix, _posix) == 0)
         return false;
     apply(posix);
-    LOG_INFO("Timezone auto: '%s' (UTC%+ld s) -> '%s'", ianaName ? ianaName : "",
-             static_cast<long>(utcOffsetSeconds), _posix);
+    LOG_INFO("Timezone auto: '%s' (UTC%+ld s) -> '%s'", ianaName ? ianaName : "", static_cast<long>(utcOffsetSeconds),
+             _posix);
     return true;
 }
 

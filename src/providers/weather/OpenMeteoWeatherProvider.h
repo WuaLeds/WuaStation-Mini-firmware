@@ -22,8 +22,7 @@ class OpenMeteoWeatherProvider : public INetJob
 {
 public:
     // Call before NetWorker::begin(). Coordinates win when both are given.
-    void configure(const char *city, bool hasCoordinates, float latitude, float longitude,
-                   bool europeanAqi);
+    void configure(const char *city, bool hasCoordinates, float latitude, float longitude, bool europeanAqi);
 
     const char *name() const override { return "open-meteo"; }
     bool enabled() const override { return _hasCoordinates || _city[0] != '\0'; }

@@ -12,7 +12,9 @@ public:
     static constexpr uint8_t kPriority = 2; // above a pinned timer
 
     PortalStateProvider(Compositor &compositor, WifiService &wifi)
-        : ScrollTextStateBase(compositor, "portal", 0, 0 /* endless */, kPriority), _wifi(wifi) {}
+        : ScrollTextStateBase(compositor, "portal", 0, 0 /* endless */, kPriority), _wifi(wifi)
+    {
+    }
 
     bool canBeShown() const override { return _wifi.portalActive(); }
 

@@ -1,0 +1,28 @@
+# Code style of the WuaStation-mini firmware, checked in CI (.github/workflows/ci.yml).
+# Format everything:  clang-format -i src/*/*.h src/*/*.cpp src/*/*/*.h src/*/*/*.cpp src/*.cpp
+# Version used by CI: clang-format 23.1.5 (pip install clang-format==23.1.5).
+---
+Language: Cpp
+BasedOnStyle: Microsoft
+IndentWidth: 4
+ColumnLimit: 120
+AccessModifierOffset: -4
+NamespaceIndentation: All
+IndentCaseLabels: false
+FixNamespaceComments: false
+PointerAlignment: Right
+ReferenceAlignment: Right
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortLambdasOnASingleLine: All
+AllowShortEnumsOnASingleLine: false
+BreakConstructorInitializers: BeforeColon
+PackConstructorInitializers: BinPack
+AlignTrailingComments: true
+Cpp11BracedListStyle: true
+SortIncludes: Never
+ReflowComments: false
+InsertNewlineAtEOF: true

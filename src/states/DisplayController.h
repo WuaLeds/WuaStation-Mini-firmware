@@ -20,8 +20,7 @@ class DisplayController
 public:
     static constexpr uint8_t kMaxStates = 24;
 
-    DisplayController(WuaDisplay &display, Compositor &compositor)
-        : _display(display), _compositor(compositor) {}
+    DisplayController(WuaDisplay &display, Compositor &compositor) : _display(display), _compositor(compositor) {}
 
     bool addState(IDisplayStateProvider *state);
     void begin();
@@ -34,10 +33,7 @@ public:
     // Offer a button event to the active state. True if it was consumed.
     bool dispatchButton(ButtonId id, ButtonEvent event);
 
-    const IDisplayStateProvider *current() const
-    {
-        return _current >= 0 ? _states[_current] : nullptr;
-    }
+    const IDisplayStateProvider *current() const { return _current >= 0 ? _states[_current] : nullptr; }
 
 private:
     bool isDone(const IDisplayStateProvider *state) const;

@@ -69,8 +69,7 @@ void SensorManager::loop()
         _phaseSinceMs = now;
         break;
 
-    case Phase::Converting:
-    {
+    case Phase::Converting: {
         if (now - _phaseSinceMs < _active->conversionTimeMs())
             break;
         SensorReading r{};
@@ -87,8 +86,7 @@ void SensorManager::loop()
         ++_version;
         _phase = Phase::Idle;
         _phaseSinceMs = now;
-        LOG_DEBUG("Sensor %s: %.2f C, %.1f %%, %.1f hPa", _active->name(), r.temperatureC,
-                  r.humidity, r.pressureHpa);
+        LOG_DEBUG("Sensor %s: %.2f C, %.1f %%, %.1f hPa", _active->name(), r.temperatureC, r.humidity, r.pressureHpa);
         break;
     }
     }

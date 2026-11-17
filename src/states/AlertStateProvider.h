@@ -14,7 +14,9 @@ public:
     static constexpr uint8_t kQueueSize = 4;
 
     explicit AlertStateProvider(Compositor &compositor)
-        : ScrollTextStateBase(compositor, "alert", 0, 1, kPriority, Config::kAlertScrollSpeedMs) {}
+        : ScrollTextStateBase(compositor, "alert", 0, 1, kPriority, Config::kAlertScrollSpeedMs)
+    {
+    }
 
     // Queue a message (UTF-8). When the queue is full the oldest is dropped.
     void push(const char *message, Rgb color = Theme::kAlert, uint8_t loops = Config::kAlertLoops);

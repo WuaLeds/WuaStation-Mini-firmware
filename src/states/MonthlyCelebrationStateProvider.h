@@ -8,7 +8,9 @@ class MonthlyCelebrationStateProvider : public CalendarStateProvider
 {
 public:
     MonthlyCelebrationStateProvider(Compositor &compositor, const TimeService &time, const Date &target)
-        : CalendarStateProvider(compositor, time, target, "celebration", Theme::kCelebration) {}
+        : CalendarStateProvider(compositor, time, target, "celebration", Theme::kCelebration)
+    {
+    }
 
 protected:
     bool isActiveDate(const struct tm &now) const override;

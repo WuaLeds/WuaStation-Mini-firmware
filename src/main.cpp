@@ -8,8 +8,14 @@
 
 #include "bench/Benchmark.h"
 
-void setup() { Benchmark::setup(); }
-void loop() { Benchmark::loop(); }
+void setup()
+{
+    Benchmark::setup();
+}
+void loop()
+{
+    Benchmark::loop();
+}
 
 #else
 
@@ -17,7 +23,13 @@ void loop() { Benchmark::loop(); }
 
 static App app;
 
-void setup() { app.setup(); }
-void loop() { app.loop(); }
+void setup()
+{
+    app.setup();
+}
+void loop()
+{
+    app.loop();
+}
 
 #endif

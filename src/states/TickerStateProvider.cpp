@@ -109,15 +109,11 @@ uint16_t TickerStateProvider::priceColor(const TickerQuote &quote)
 {
     switch (quote.trend)
     {
-    case PriceTrend::Up:
-        return Theme::kTickerUp.to565();
-    case PriceTrend::Down:
-        return Theme::kTickerDown.to565();
-    case PriceTrend::Flat:
-        return Theme::kTickerFlat.to565();
+    case PriceTrend::Up: return Theme::kTickerUp.to565();
+    case PriceTrend::Down: return Theme::kTickerDown.to565();
+    case PriceTrend::Flat: return Theme::kTickerFlat.to565();
     case PriceTrend::Unknown:
-    default:
-        return (quote.changePct >= 0.0f ? Theme::kTickerUp : Theme::kTickerDown).to565();
+    default: return (quote.changePct >= 0.0f ? Theme::kTickerUp : Theme::kTickerDown).to565();
     }
 }
 
@@ -156,8 +152,7 @@ void TickerStateProvider::enterPage(uint8_t page)
         break;
     default: // 24 h change
         formatChange(q.changePct, text, sizeof(text));
-        Widgets::makeLabel(_label, text,
-                           (q.changePct >= 0.0f ? Theme::kTickerUp : Theme::kTickerDown).to565(),
+        Widgets::makeLabel(_label, text, (q.changePct >= 0.0f ? Theme::kTickerUp : Theme::kTickerDown).to565(),
                            Widgets::Font::Tiny);
         break;
     }

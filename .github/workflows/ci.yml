@@ -7,6 +7,27 @@ on:
     branches: [main, dev]
 
 jobs:
+  format:
+    name: clang-format
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Same version as the one in .clang-format: newer releases may format
+      # slightly differently.
+      - name: Install clang-format
+        run: pip install clang-format==23.1.5
+
+      - name: Check formatting
+        run: |
+          git ls-files 'src/*.h' 'src/*.cpp' | xargs clang-format --dry-run --Werror
+          echo "All sources match .clang-format."
+
   build:
     name: Build ${{ matrix.env }}
     runs-on: ubuntu-latest

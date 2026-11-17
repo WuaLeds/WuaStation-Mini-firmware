@@ -20,11 +20,12 @@
 class ScrollTextStateBase : public IDisplayStateProvider
 {
 public:
-    ScrollTextStateBase(Compositor &compositor, const char *id, uint32_t durationMs = 0,
-                        uint8_t passes = 1, uint8_t priority = 0,
-                        uint16_t speedMs = Config::kScrollSpeedMs)
-        : _compositor(compositor), _id(id), _duration(durationMs), _passes(passes),
-          _priority(priority), _speedMs(speedMs) {}
+    ScrollTextStateBase(Compositor &compositor, const char *id, uint32_t durationMs = 0, uint8_t passes = 1,
+                        uint8_t priority = 0, uint16_t speedMs = Config::kScrollSpeedMs)
+        : _compositor(compositor), _id(id), _duration(durationMs), _passes(passes), _priority(priority),
+          _speedMs(speedMs)
+    {
+    }
 
     const char *getId() const override { return _id; }
     uint32_t getDurationMs() const override { return _duration; }

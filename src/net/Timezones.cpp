@@ -174,6 +174,7 @@ namespace Timezones
             if (c == 0xC3 && *p)
             {
                 const unsigned char lower = static_cast<unsigned char>(*p++) | 0x20; // A..Z -> a..z
+                // clang-format off
                 if (lower >= 0xA0 && lower <= 0xA5) return 'a';
                 if (lower == 0xA7) return 'c';
                 if (lower >= 0xA8 && lower <= 0xAB) return 'e';
@@ -182,6 +183,7 @@ namespace Timezones
                 if (lower >= 0xB2 && lower <= 0xB6) return 'o';
                 if (lower >= 0xB9 && lower <= 0xBC) return 'u';
                 if (lower == 0xBD || lower == 0xBF) return 'y';
+                // clang-format on
                 return '?';
             }
             return static_cast<char>(tolower(c));
@@ -285,8 +287,8 @@ namespace Timezones
         const unsigned minutes = (abs % 3600) / 60;
         // POSIX counts the other way round: zones west of UTC are positive.
         if (minutes)
-            snprintf(out, size, "<%c%02u%02u>%s%u:%02u", west ? '-' : '+', hours, minutes,
-                     west ? "" : "-", hours, minutes);
+            snprintf(out, size, "<%c%02u%02u>%s%u:%02u", west ? '-' : '+', hours, minutes, west ? "" : "-", hours,
+                     minutes);
         else
             snprintf(out, size, "<%c%02u>%s%u", west ? '-' : '+', hours, west ? "" : "-", hours);
     }

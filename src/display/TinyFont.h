@@ -30,6 +30,6 @@ namespace TinyFont
 
     // Draw `text` centered inside the horizontal area [areaX, areaX + areaW).
     // areaW < 0 means "up to the right edge of the target".
-    void drawCentered(Adafruit_GFX &g, const char *text, uint16_t color,
-                      int16_t areaX = 0, int16_t areaW = -1, int16_t y = 0);
+    void drawCentered(Adafruit_GFX &g, const char *text, uint16_t color, int16_t areaX = 0, int16_t areaW = -1,
+                      int16_t y = 0);
 }

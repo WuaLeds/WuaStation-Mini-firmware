@@ -20,7 +20,7 @@ namespace
     void guessBase(const char *symbol, char *out, size_t size)
     {
         static const char *const kQuotes[] = {"FDUSD", "USDT", "USDC", "BUSD", "TUSD", "EUR",
-                                              "TRY", "BRL", "ARS", "BTC", "ETH", "BNB"};
+                                              "TRY",   "BRL",  "ARS",  "BTC",  "ETH",  "BNB"};
         const size_t len = strlen(symbol);
         for (const char *quote : kQuotes)
         {
@@ -62,8 +62,8 @@ void BinanceTickerProvider::configure(const char *symbolsCsv)
     LOG_INFO("Ticker: %u symbol(s) configured", _work.count);
 }
 
-bool BinanceTickerProvider::request(const String &pathAndQuery, JsonDocument &doc,
-                                    const JsonDocument *filter, int &code)
+bool BinanceTickerProvider::request(const String &pathAndQuery, JsonDocument &doc, const JsonDocument *filter,
+                                    int &code)
 {
     for (uint8_t attempt = 0; attempt < kHostCount; ++attempt)
     {

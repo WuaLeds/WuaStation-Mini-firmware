@@ -40,9 +40,8 @@ bool ScrollTextStateBase::startPass(WuaDisplay &display)
         return false;
 
     display.setTextColorRGB(color.r, color.g, color.b);
-    display.startScroll(TextUtil::utf8ToCp437(text.c_str()), _speedMs,
-                        WuaDisplay::ScrollMode::Once, WuaDisplay::ScrollDirection::Left,
-                        Layout::kTextY);
+    display.startScroll(TextUtil::utf8ToCp437(text.c_str()), _speedMs, WuaDisplay::ScrollMode::Once,
+                        WuaDisplay::ScrollDirection::Left, Layout::kTextY);
     return true;
 }
 

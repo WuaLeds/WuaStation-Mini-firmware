@@ -22,8 +22,7 @@ namespace Board
             // getEfuseMac() packs the 6 MAC bytes little-endian: bytes 4 and 5
             // are the device-specific tail.
             const uint64_t mac = ESP.getEfuseMac();
-            snprintf(id, sizeof(id), "%02X%02X",
-                     static_cast<unsigned>((mac >> 32) & 0xFF),
+            snprintf(id, sizeof(id), "%02X%02X", static_cast<unsigned>((mac >> 32) & 0xFF),
                      static_cast<unsigned>((mac >> 40) & 0xFF));
         }
         return id;
