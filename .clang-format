@@ -1,5 +1,6 @@
 # Code style of the WuaStation-mini firmware, checked in CI (.github/workflows/ci.yml).
-# Format everything:  clang-format -i src/*/*.h src/*/*.cpp src/*/*/*.h src/*/*/*.cpp src/*.cpp
+# Format everything (core library, ESPHome component and benchmark):
+#   git ls-files 'lib/*.h' 'lib/*.cpp' 'components/*.h' 'components/*.cpp' 'src/*.h' 'src/*.cpp' | xargs clang-format -i
 # Version used by CI: clang-format 23.1.5 (pip install clang-format==23.1.5).
 ---
 Language: Cpp
