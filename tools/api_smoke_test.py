@@ -84,7 +84,7 @@ async def main():
     info = await cli.device_info()
     print(f"Device: {info.name} ({info.friendly_name}), {info.project_name} {info.project_version}, "
           f"ESPHome {info.esphome_version}, MAC {info.mac_address}")
-    check("project name", info.project_name == "wualabs.wuastation-mini", info.project_name)
+    check("project name", info.project_name == "Wualeds.WuaStation mini", info.project_name)
     check("project version", info.project_version.startswith("0.4"), info.project_version)
 
     entities, actions = await cli.list_entities_services()
