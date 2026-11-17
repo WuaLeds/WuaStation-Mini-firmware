@@ -24,8 +24,9 @@ esphome:
   # One name per station on the network: wuastation-mini-3f7590.local
   name_add_mac_suffix: true
   comment: Clock, weather, crypto and sensor readings on an 18x7 LED matrix
+  # Home Assistant shows "<maker>.<model>" as manufacturer and model.
   project:
-    name: wualabs.wuastation-mini
+    name: Wualeds.WuaStation mini
     version: "0.4"
   min_version: 2026.10.0
 
