@@ -81,8 +81,10 @@ jobs:
           key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini', 'lib/WuaStationCore/library.json') }}
           restore-keys: ${{ runner.os }}-pio-
 
+      # The pioarduino build script imports littlefs and fatfs in the Python
+      # that runs PlatformIO, before its own environment is set up.
       - name: Install PlatformIO Core
-        run: pip install --upgrade platformio
+        run: pip install --upgrade platformio littlefs-python fatfs-ng
 
       - name: Build c3_bench
         run: pio run -e c3_bench
