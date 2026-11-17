@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """Collect a PlatformIO build into the files the web flasher installs.
 
-    python tools/release_assets.py <tag> [env=c3_release] [out=dist]
+    python tools/release_assets.py <tag> [env=wuastation-mini] [out=dist] [metadata=.esphome/idedata/wuastation-mini.json]
 
-Run it from the project root after `pio run -e <env>`. It copies the
-bootloader, partition table, boot_app0 and the application to <out>/ and writes
-<out>/manifest.json with the flash offset, size and SHA-256 of each part.
+Run it from the repository root after
+`esphome -s components_source components compile wuastation-mini.yaml`.
+<metadata> is the build description ESPHome writes (idedata: application,
+flash images and offsets); a PlatformIO project folder also works, then
+`pio project metadata -e <env>` is asked instead.
+It copies the bootloader, partition table, boot_app0 and the application to
+<out>/ and writes <out>/manifest.json with the flash offset, size and SHA-256
+of each part. ESPHome's merged image (flash at 0x0, erases the settings) is
+attached too, as <board>-<tag>.factory.bin, for esptool users.
 
 The release workflow attaches these files to the GitHub release; wualeds.com
 downloads them when it is built, and its /firmware page checks each part
@@ -51,14 +57,19 @@ def git_commit():
 
 def main():
     if len(sys.argv) < 2:
-        sys.exit("usage: python tools/release_assets.py <tag> [env=c3_release] [out=dist]")
+        sys.exit("usage: python tools/release_assets.py <tag> [env] [out] [project]")
     tag = sys.argv[1]
-    env = sys.argv[2] if len(sys.argv) > 2 else "c3_release"
-    out = Path(sys.argv[3] if len(sys.argv) > 3 else "dist")
-    pio = os.environ.get("PIO", "pio")
-
-    metadata = subprocess.check_output([pio, "project", "metadata", "-e", env, "--json-output"], text=True)
-    meta = json.loads(metadata)[env]
+    env = sys.argv[2] if len(sys.argv) > 2 else "wuastation-mini"
+    out = Path(sys.argv[3] if len(sys.argv) > 3 else "dist").resolve()
+    source = Path(sys.argv[4] if len(sys.argv) > 4 else ".esphome/idedata/wuastation-mini.json").resolve()
+    if source.is_file():
+        meta = json.loads(source.read_text(encoding="utf-8"))
+    else:
+        pio = os.environ.get("PIO", "pio")
+        output = subprocess.check_output(
+            [pio, "project", "metadata", "-e", env, "--json-output"], text=True, cwd=source
+        )
+        meta = json.loads(output[output.index("{"):])[env]  # skip build chatter
     images = [(int(img["offset"], 16), Path(img["path"])) for img in meta["extra"]["flash_images"]]
     images.append((app_offset(meta, images), Path(meta["prog_path"]).with_suffix(".bin")))
 
@@ -70,6 +81,10 @@ def main():
         parts.append(
             {"file": path.name, "offset": offset, "size": len(data), "sha256": hashlib.sha256(data).hexdigest()}
         )
+
+    factory = Path(meta["prog_path"]).with_name("firmware.factory.bin")
+    if factory.is_file():
+        shutil.copyfile(factory, out / f"{BOARD}-{tag}.factory.bin")
 
     manifest = {
         "board": BOARD,

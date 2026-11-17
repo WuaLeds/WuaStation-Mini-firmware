@@ -1,11 +1,15 @@
 name: Release
 
-# Builds the firmware of a GitHub release, attaches the files the web flasher
-# installs (bootloader, partitions, boot_app0, app + manifest.json) and asks
-# Vercel to rebuild wualeds.com, which picks the new version up at build time.
+# Builds the firmware of a GitHub release with ESPHome, attaches the files the
+# web flasher installs (bootloader, partitions, boot_app0, app + manifest.json,
+# plus the merged factory image) and asks Vercel to rebuild wualeds.com, which
+# picks the new version up at build time.
+#
+# For tags from v0.4 on (ESPHome builds). Earlier tags were PlatformIO builds
+# and already have their files attached.
 #
 # Runs by itself when a release is published. "Run workflow" rebuilds an
-# existing tag (e.g. one tagged before this workflow existed).
+# existing tag.
 
 on:
   release:
@@ -13,10 +17,10 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Release tag to build (e.g. v0.3)
+        description: Release tag to build (e.g. v0.4)
         required: true
       allow_version_mismatch:
-        description: Build even if WUA_FIRMWARE_VERSION does not match the tag
+        description: Build even if the firmware version does not match the tag
         type: boolean
         default: false
 
@@ -28,7 +32,10 @@ concurrency:
 
 env:
   TAG: ${{ github.event.release.tag_name || inputs.tag }}
-  PIO_ENV: c3_release
+  ESPHOME_VERSION: "2026.10.2"
+  # Build description ESPHome writes for wuastation-mini.yaml (flash images, offsets)
+  IDEDATA: .esphome/idedata/wuastation-mini.json
+  PIO_ENV: wuastation-mini
 
 jobs:
   release:
@@ -46,40 +53,39 @@ jobs:
           ref: ${{ env.TAG }}
           path: fw
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Firmware version, ESPHome project version, the component source that
+      # Home Assistant users get and the tag must all agree.
       - name: Check firmware version
         working-directory: fw
         env:
           ALLOW_MISMATCH: ${{ inputs.allow_version_mismatch || false }}
         run: |
-          code=$(sed -n 's/^#define WUA_FIRMWARE_VERSION "\(.*\)"/\1/p' src/config/Config.h)
-          if [ "v$code" != "$TAG" ] && [ "$code" != "$TAG" ]; then
-            msg="src/config/Config.h says WUA_FIRMWARE_VERSION \"$code\" but the tag is $TAG"
-            if [ "$ALLOW_MISMATCH" = "true" ]; then echo "::warning::$msg"; else echo "::error::$msg"; exit 1; fi
+          if ! python tools/check_version.py "$TAG"; then
+            if [ "$ALLOW_MISMATCH" = "true" ]; then echo "::warning::version mismatch allowed"; else exit 1; fi
           fi
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
 
       - name: Cache PlatformIO
         uses: actions/cache@v4
         with:
           path: ~/.platformio
-          key: ${{ runner.os }}-pio-${{ hashFiles('fw/platformio.ini') }}
-          restore-keys: ${{ runner.os }}-pio-
+          key: ${{ runner.os }}-esphome-${{ env.ESPHOME_VERSION }}-${{ hashFiles('fw/lib/WuaStationCore/library.json') }}
+          restore-keys: ${{ runner.os }}-esphome-${{ env.ESPHOME_VERSION }}-
 
-      - name: Install PlatformIO Core
-        run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade platformio
+      - name: Install ESPHome
+        run: pip install "esphome==$ESPHOME_VERSION"
 
-      - name: Build ${{ env.PIO_ENV }}
+      # The component comes from this checkout (the tag), not from GitHub.
+      - name: Build firmware
         working-directory: fw
-        run: pio run -e "$PIO_ENV"
+        run: esphome -s components_source components compile wuastation-mini.yaml
 
       - name: Collect release files
         working-directory: fw
-        run: python ../ci/tools/release_assets.py "$TAG" "$PIO_ENV" ../dist
+        run: python ../ci/tools/release_assets.py "$TAG" "$PIO_ENV" ../dist "$IDEDATA"
 
       - name: Attach files to the release
         env:

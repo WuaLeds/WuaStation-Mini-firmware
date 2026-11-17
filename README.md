@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>Clock, weather, crypto and sensor readings on an 18 x 7 LED matrix.</b><br>
-  PlatformIO firmware for the WuaStation-mini (ESP32-C3) with the LMX1p panoramic matrix.
+  Works on its own, and joins Home Assistant through ESPHome when you want it to.
 </p>
 
 <p align="center">
@@ -15,9 +15,9 @@
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-f6604a"></a>
   <a href="https://wualeds.com/firmware"><img alt="Flash from the browser" src="https://img.shields.io/badge/flash-from%20the%20browser-fb8b24"></a>
   <br>
+  <img alt="ESPHome" src="https://img.shields.io/badge/ESPHome-2026.10-000000?logo=esphome&logoColor=white">
+  <img alt="Home Assistant" src="https://img.shields.io/badge/Home%20Assistant-ready-18BCF2?logo=homeassistant&logoColor=white">
   <img alt="ESP32-C3" src="https://img.shields.io/badge/MCU-ESP32--C3-f0466a?logo=espressif&logoColor=white">
-  <img alt="PlatformIO" src="https://img.shields.io/badge/PlatformIO-pioarduino%2055.03.37-ffa830?logo=platformio&logoColor=white">
-  <img alt="Arduino-ESP32 3.3.7" src="https://img.shields.io/badge/Arduino--ESP32-3.3.7-00979D?logo=arduino&logoColor=white">
   <img alt="Code style: clang-format" src="https://img.shields.io/badge/code%20style-clang--format-6b5d68">
 </p>
 
@@ -26,6 +26,7 @@
   <a href="#%EF%B8%8F-screens">Screens</a> ·
   <a href="#-buttons">Buttons</a> ·
   <a href="#-setup">Setup</a> ·
+  <a href="#-home-assistant">Home Assistant</a> ·
   <a href="#%EF%B8%8F-build--flash">Build</a> ·
   <a href="#-releases">Releases</a> ·
   <a href="CHANGELOG.md">Changelog</a>
@@ -35,7 +36,8 @@
 
 > [!TIP]
 > **No tools needed:** install or update the firmware straight from the browser at
-> [wualeds.com/firmware](https://wualeds.com/firmware). Your WiFi and settings are kept.
+> [wualeds.com/firmware](https://wualeds.com/firmware). Your WiFi and settings are kept,
+> also when updating from 0.3.
 
 ## ✨ Features
 
@@ -49,18 +51,23 @@
 | 💬 **Messages and alarm** | Your own scrolling text, a daily (visual) alarm and on-screen alerts |
 | ⚙️ **Settings page** | Wualeds-branded page served by the board: screens, order, times, city, everything |
 | 🌍 **66 preset cities** | City and timezone picked from a world list, or automatic from the city |
+| 🏡 **Home Assistant** | Found on the network, added in one click: display, message, screens, sensors, buttons |
 
-It carries over every feature of `WuaDisplay-r1-firmware` and adapts it to the
-18 x 7 canvas, drawn through the
+The firmware is an [ESPHome](https://esphome.io) build: ESPHome brings WiFi,
+the setup portal, the Home Assistant API, OTA updates and logs, and the
+station itself (screens, data, settings page) runs inside it as the
+`wuastation` component. Without Home Assistant nothing changes: the station
+keeps working on its own. Text is drawn with the
 [WuaDisplay-LMX](https://github.com/WuaLeds/WuaDisplay-LMX) library
 (`WUA_BOARD_LMX1P` backend).
 
 ## 🖥️ Screens
 
 Which screens rotate, in which order and for how long is set from the
-[settings page](#%EF%B8%8F-settings-page); screens without data are skipped
-automatically. Always present: **Splash** ("WuaStation" once at boot) and
-**Status** (WiFi icon and progress while connecting, red cross when offline).
+[settings page](#%EF%B8%8F-settings-page) or from Home Assistant; screens
+without data are skipped automatically. Always present: **Splash**
+("WuaStation" once at boot) and **Status** (WiFi icon and progress while
+connecting, red cross when offline).
 
 | | Id | Content | Default time |
 | :---: | --- | --- | --- |
@@ -70,12 +77,12 @@ automatically. Always present: **Splash** ("WuaStation" once at boot) and
 | ☂️ | `forecast` | Today: ↑ max, ↓ min, ☂ chance of rain, `UV` index, `AQ` air quality, colored by band | 10 s, shared |
 | 🏠 | `indoor` | I2C sensor: temperature, humidity, pressure (BME280) | 9 s |
 | 💰 | `ticker` | Fixed pages per pair: name `BTC` → price `97.2K` → 24 h change `+2.3%` | 6.5 s per pair |
-| 💬 | `message` | Custom text from the settings page | one pass |
+| 💬 | `message` | Custom text (settings page or Home Assistant) | one pass |
 | 🎉 | `celebration` | Monthly anniversary message (from WuaDisplay-r1) | one pass |
 | ⏳ | `timer` | Countdown / pomodoro (see [Timer](#%EF%B8%8F-timer)) | 4 s while idle |
 
 **Interrupt screens** take over the rotation, highest first:
-🚨 Alarm › 🔔 Alert › 📶 WiFi portal › ⏳ running Timer.
+🚨 Alarm › 🔔 Alert and notifications › 📶 WiFi setup › ⏳ running Timer.
 
 <details>
 <summary>🎨 <b>How text fits 18 pixels</b></summary>
@@ -97,13 +104,15 @@ automatically. Always present: **Splash** ("WuaStation" once at boot) and
 
 | Input | Click | Long press |
 | --- | --- | --- |
-| 🔼 **UP** | Next screen | Open / close the WiFi setup portal |
-| 🔽 **DOWN** | Brightness step (saved) | Device info (IP, host name, version) |
+| 🔼 **UP** | Next screen | WiFi info: network and address (or the setup WiFi while offline) |
+| 🔽 **DOWN** | Brightness step (saved) | Device info (IP, host name, version, Home Assistant) |
 | 👆 **TOUCH** | Next screen | Device info |
 
 - Any click dismisses an alert; any button stops the alarm.
 - On the timer screen DOWN drives the timer instead (below).
+- Every press also reaches Home Assistant as an event, for automations.
 - 🧹 **Factory reset**: hold DOWN while powering on (3 s, shows `RST` then `OK`).
+  It erases the settings and the WiFi network.
 
 ### ⏱️ Timer
 
@@ -121,20 +130,31 @@ break after every 4th block, and goes on by itself until stopped. Times are in
 
 ## 📶 Setup
 
-1. On first boot (no WiFi saved) the board opens the access point
-   **`WuaStation-XXXX`** (password `WuaLeds2025`, see `Config::kPortalPassword`)
-   and scrolls the instructions.
-2. Join it and open **`http://192.168.4.1`**: the settings page opens;
-   **WiFi setup** picks your network.
-3. Once connected, the same page is served on your network at
-   **`http://wuastation-xxxx.local`** (or the IP shown with a DOWN long press),
-   so the settings can be changed any time.
+1. On first boot the board opens the WiFi network **`WuaStation-XXXX`**
+   (password `WuaLeds2025`) and scrolls the instructions.
+2. Join it from your phone: the setup page opens by itself (or open
+   `http://192.168.4.1`). Pick your network and type its password.
+3. Once connected, the settings page is served on your network at
+   **`http://wuastation-mini-xxxxxx.local`** (or the IP shown with a DOWN long
+   press).
+
+Right after flashing from the browser, the network can also be set over USB
+(Improv). If the saved network disappears (new router, moving house) the
+station opens `WuaStation-XXXX` again by itself after a minute; *Change WiFi
+network* on the settings page does it on purpose.
+
+> [!NOTE]
+> **Updating from 0.3** keeps everything: the WiFi network is moved into
+> ESPHome on the first boot and the settings stay where they were (same
+> partition table). The host name changes from `wuastation-xxxx.local` to
+> `wuastation-mini-xxxxxx.local`.
 
 ### ⚙️ Settings page
 
 A page with the Wualeds look (logo, colors of wualeds.com, light and dark
 mode, Spanish and English) served by the board itself, with no internet
-needed. Saving stores everything in NVS and restarts the board.
+needed. Changes apply at once; only a new city or new ticker pairs restart the
+board.
 
 | Section | What you can set |
 | --- | --- |
@@ -143,7 +163,7 @@ needed. Saving stores everything in NVS and restarts the board.
 | 💰 **Ticker** | Up to 4 Binance pairs (`BTCUSDT, ETHUSDT`); empty hides the screen |
 | 🔔 **Alarm and message** | Daily alarm (switch + time) and the custom scrolling text |
 | ☀️ **Display and sensor** | Brightness (applied live while dragging) and a temperature offset for the sensor (±10 °C, enclosure heat) |
-| 🔧 **Device** | Firmware version, host name, uptime, WiFi setup, restart |
+| 🔧 **Device** | Firmware version, host name, uptime, Home Assistant connection, change WiFi network, restart |
 
 The header also shows the device clock, WiFi network, IP and the sensor
 reading, refreshed every 10 s.
@@ -151,9 +171,9 @@ reading, refreshed every 10 s.
 > [!NOTE]
 > **Timezone** *Automatic* (`auto`, the default) follows the weather city, so
 > choosing the city is enough. It also accepts an Olson name, city or country
-> from [`src/net/Timezones.cpp`](src/net/Timezones.cpp) (`Europe/Madrid`,
-> `Buenos Aires`, `Tokio`, `Argentina`; case, spaces and accents do not
-> matter) or any POSIX TZ string (`<-03>3`).
+> from [`Timezones.cpp`](lib/WuaStationCore/src/net/Timezones.cpp)
+> (`Europe/Madrid`, `Buenos Aires`, `Tokio`, `Argentina`; case, spaces and
+> accents do not matter) or any POSIX TZ string (`<-03>3`).
 
 <details>
 <summary>🧩 <b>How the page is built</b></summary>
@@ -162,39 +182,137 @@ reading, refreshed every 10 s.
   no build step. The preset cities live in its `CITIES` table; each geocoding
   query (`Name,CC`) and timezone was checked against the Open-Meteo geocoding
   API.
-- [`tools/embed_web.py`](tools/embed_web.py) runs before every build and embeds
-  it gzipped (~12 KB) as `SettingsPageData.h`, generated inside the build
-  directory (`.pio/build/<env>/generated/`, never in `src/`).
-- [`src/web/SettingsServer`](src/web/SettingsServer.h) serves it on
-  WiFiManager's web server, plus a small JSON API: `/api/settings`,
-  `/api/status`, `/api/brightness`, `/api/restart`.
+- The `wuastation` component embeds it gzipped (~12 KB) at build time and
+  serves it on ESPHome's web server
+  ([`settings_web.cpp`](components/wuastation/settings_web.cpp)), plus a small
+  JSON API: `/api/settings`, `/api/status`, `/api/brightness`, `/api/restart`,
+  `/api/wifi/forget`.
 - The rotation is stored as `time:10,date:4,-weather,ticker:9,...` (display
   order, optional seconds, `-` = hidden).
 
 </details>
 
-## 🛠️ Build & flash
+## 🏡 Home Assistant
 
-```sh
-pio run -e c3_release                 # build
-pio run -e c3_release -t upload       # flash over USB
-pio device monitor                    # serial monitor (c3_debug for logs)
+The station shows up by itself in **Settings › Devices & services** (ESPHome
+discovery); click *Configure* and it is added. Nothing else to install.
+
+| Entity | Type | What it does |
+| --- | --- | --- |
+| Display | 💡 light | On/off and brightness of the matrix |
+| Message | ✏️ text | The custom scrolling message (empty hides it) |
+| Screen | 📋 select | Screen on display; choosing one jumps to it |
+| *Time screen* … *Timer screen* | 🔀 switch ×9 | Whether each screen is part of the rotation |
+| Next screen, Restart, Factory reset | 🔘 button | Factory reset is disabled by default |
+| Button UP / DOWN / TOUCH | ⚡ event | `click` and `long_press` of the physical buttons |
+| Indoor temperature, humidity, pressure | 🌡️ sensor | From the I2C sensor |
+| Outdoor temperature, humidity, chance of rain, UV index, air quality | 🌤️ sensor | From the weather service |
+| WiFi signal, uptime, IP address, WiFi network | 🩺 diagnostic | |
+
+Every change is mirrored both ways: what you change on the settings page or
+with the buttons shows up in Home Assistant, and the other way round.
+
+**Actions** (Developer tools › Actions):
+
+| Action | Data | |
+| --- | --- | --- |
+| `esphome.wuastation_mini_xxxxxx_show_message` | `message: "Doorbell"` | Scrolls a notification over any screen |
+| `esphome.wuastation_mini_xxxxxx_show_screen` | `screen: "weather"` | Jumps to a screen |
+
+<details>
+<summary>🤖 <b>Automation examples</b></summary>
+
+```yaml
+# Doorbell -> message on the station
+automation:
+  - alias: Doorbell on the WuaStation
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.doorbell
+        to: "on"
+    actions:
+      - action: esphome.wuastation_mini_3f7590_show_message
+        data:
+          message: "Ring ring!"
+
+  # Dim the display at night
+  - alias: WuaStation night mode
+    triggers:
+      - trigger: time
+        at: "23:00:00"
+    actions:
+      - action: light.turn_on
+        target:
+          entity_id: light.wuastation_mini_3f7590_display
+        data:
+          brightness_pct: 5
+
+  # Long press on TOUCH toggles the living room lamp
+  - alias: WuaStation TOUCH button
+    triggers:
+      - trigger: state
+        entity_id: event.wuastation_mini_3f7590_button_touch
+        attribute: event_type
+        to: long_press
+    actions:
+      - action: light.toggle
+        target:
+          entity_id: light.living_room
 ```
 
-| Environment | Purpose |
-| --- | --- |
-| 🚀 `c3_release` | Production build (default) |
-| 🐞 `c3_debug` | Logs over USB-CDC (`WUA_ENABLE_DEBUG`) + built-in USB-JTAG debugging |
-| 📊 `c3_bench` | FPS benchmark of the LED pipeline, WiFi off |
+</details>
 
-Toolchain: pioarduino `55.03.37` (Arduino-ESP32 core 3.3.7). The
-WuaDisplay-LMX library is pinned to a commit in `platformio.ini`; to develop
-the library side by side, point `lib_deps` to a local `symlink://` path.
+**ESPHome dashboard**: the station advertises its configuration
+(`dashboard_import`), so the ESPHome add-on offers to *adopt* it. Adopting
+creates a small YAML that pulls [`wuastation-mini.yaml`](wuastation-mini.yaml)
+from this repository; from there you can add an API encryption key or your own
+entities and update the station over the air.
+
+## 🛠️ Build & flash
+
+The firmware is built with ESPHome (Python 3.11+):
+
+```sh
+pip install esphome==2026.10.2
+esphome -s components_source components run wuastation-mini.yaml       # build + flash (USB or OTA)
+esphome -s components_source components logs wuastation-mini.yaml      # logs
+```
+
+`-s components_source components` builds the `wuastation` component from this
+folder; without it ESPHome fetches the released one from GitHub (that is what
+Home Assistant users get). Add `-s log_level DEBUG` for detailed logs.
+
+| Folder | What |
+| --- | --- |
+| [`wuastation-mini.yaml`](wuastation-mini.yaml) | ESPHome configuration of the product (WiFi, API, entities) |
+| [`components/wuastation/`](components/wuastation) | ESPHome component: hosts the core, settings page, Home Assistant entities |
+| [`lib/WuaStationCore/`](lib/WuaStationCore) | Firmware core (PlatformIO library): screens, data, sensors, settings |
+| [`src/`](src) + [`platformio.ini`](platformio.ini) | `c3_bench`: FPS benchmark of the LED pipeline with plain PlatformIO |
 
 > [!WARNING]
-> If `pio` from the system PATH fails with a `littlefs` import error, use the
-> PlatformIO Core bundled with the VS Code extension
-> (`~/.platformio/penv/Scripts/pio`), or build from the VS Code PlatformIO UI.
+> **Windows**: run ESPHome from PowerShell or cmd (ESP-IDF tools refuse Git
+> Bash / MSYS), and keep ESPHome's PlatformIO apart from any other PlatformIO
+> install with `PLATFORMIO_CORE_DIR` (it installs its own platform versions):
+>
+> ```powershell
+> $env:PLATFORMIO_CORE_DIR = "$HOME\.platformio-esphome"
+> ```
+
+<details>
+<summary>🧪 <b>Testing without Home Assistant</b></summary>
+
+[`tools/api_smoke_test.py`](tools/api_smoke_test.py) talks to a station with
+`aioesphomeapi`, the library behind Home Assistant's ESPHome integration: it
+checks the device info, every entity and action, drives the light, message,
+screen select, switches and buttons, verifies each change through the
+settings API and puts everything back.
+
+```sh
+pip install aioesphomeapi
+python tools/api_smoke_test.py wuastation-mini-xxxxxx.local
+```
+
+</details>
 
 ### 🎨 Code style
 
@@ -204,7 +322,7 @@ before committing:
 
 ```sh
 pip install clang-format==23.1.5
-git ls-files 'src/*.h' 'src/*.cpp' | xargs clang-format -i
+git ls-files 'lib/*.h' 'lib/*.cpp' 'components/*.h' 'components/*.cpp' 'src/*.h' 'src/*.cpp' | xargs clang-format -i
 ```
 
 Hand-aligned tables are kept between `// clang-format off` and
@@ -216,25 +334,31 @@ Each GitHub release is also published on
 [wualeds.com/firmware](https://wualeds.com/firmware), the page that installs the
 firmware from the browser. To publish a version:
 
-1. Set `WUA_FIRMWARE_VERSION` in `src/config/Config.h` (e.g. `"0.3"`), add the
-   version to [`CHANGELOG.md`](CHANGELOG.md) and push.
-2. Create a release with the tag `v0.3`. Write the notes as two bullet lists
+1. Go through the [release test checklist](docs/TESTING.md) on real hardware.
+2. Set the version everywhere it appears and push:
+   `WUA_FIRMWARE_VERSION` in `lib/WuaStationCore/src/config/Config.h`,
+   `project: version` and the tag in `components_source` in
+   `wuastation-mini.yaml`, `version` in `lib/WuaStationCore/library.json`, and
+   a new entry in [`CHANGELOG.md`](CHANGELOG.md).
+   [`tools/check_version.py`](tools/check_version.py) checks they agree (CI runs it).
+3. Create a release with the tag (`v0.4`). Write the notes as two bullet lists
    under the headings `## English` and `## Español`: the website shows each
    one in its language.
-3. The [Release](.github/workflows/release.yml) workflow builds `c3_release`,
-   attaches the files the web flasher installs (`bootloader.bin`,
+4. The [Release](.github/workflows/release.yml) workflow builds the firmware
+   with ESPHome, attaches the files the web flasher installs (`bootloader.bin`,
    `partitions.bin`, `boot_app0.bin`, `firmware.bin` and a `manifest.json`
    with each part's offset, size and SHA-256, made by
-   [`tools/release_assets.py`](tools/release_assets.py)) and calls the
-   `VERCEL_DEPLOY_HOOK` secret so the website is rebuilt with the new version.
+   [`tools/release_assets.py`](tools/release_assets.py)) plus a merged
+   `.factory.bin`, and calls the `VERCEL_DEPLOY_HOOK` secret so the website is
+   rebuilt with the new version.
 
-The workflow stops if `WUA_FIRMWARE_VERSION` does not match the tag. To rebuild
-an existing tag, run it by hand from the Actions tab (*Run workflow*).
+The workflow stops if the versions do not match the tag. To rebuild an
+existing tag, run it by hand from the Actions tab (*Run workflow*).
 
 ## 🔌 Hardware
 
 <details>
-<summary>📌 <b>Pinout</b> (from <code>PCB/WuaStation-Mini/WuaStation-Mini.kicad_sch</code>, see <a href="src/board/Pins.h"><code>src/board/Pins.h</code></a>)</summary>
+<summary>📌 <b>Pinout</b> (from <code>PCB/WuaStation-Mini/WuaStation-Mini.kicad_sch</code>, see <a href="lib/WuaStationCore/src/board/Pins.h"><code>Pins.h</code></a>)</summary>
 
 | Net | GPIO | Use |
 | --- | --- | --- |
@@ -245,7 +369,7 @@ an existing tag, run it by hand from the Actions tab (*Run workflow*).
 | SDA / SCL | IO3 / IO6 | I2C expansion connector J1 (pull-ups on the breakout) |
 | MCC1 | IO0 + IO20 | USB-C CC1 via JP1 (bridged), kept high-impedance |
 | MCC2 | IO1 + IO21 | USB-C CC2 via JP2 (bridged), kept high-impedance |
-| D- / D+ | IO18 / IO19 | Native USB (Serial = USB-CDC) |
+| D- / D+ | IO18 / IO19 | Native USB (logs and Improv over USB Serial/JTAG) |
 | RST | EN | SW1 |
 
 The LMX1p chain order was checked against the LMX1p KiCad files: the board
@@ -270,29 +394,31 @@ all 126 LEDs.
 <summary>📁 <b>Source tree</b></summary>
 
 ```
-src/
-├── main.cpp                 entry point (App, or Benchmark in c3_bench)
-├── app/App.*                composition root: services, screens, buttons
+wuastation-mini.yaml         ESPHome configuration of the product
+components/wuastation/       ESPHome component
+├── __init__.py              configuration, settings page embedding, libraries
+├── wuastation.*             WuaStation: hosts the core (Host), mirrors it to Home Assistant
+├── settings_web.*           settings page + JSON API on ESPHome's web server
+├── entities.h               light, text, select, switch, button classes
+├── legacy_wifi.*            moves the WiFi network saved by 0.3 into ESPHome
+├── sensor.py light.py text.py select.py switch.py button.py event.py
+└── partitions.csv           same table as 0.3 (settings survive an update)
+lib/WuaStationCore/src/      firmware core (no ESPHome inside)
+├── app/                     Station (composition root, buttons), Host (what the host provides)
 ├── board/                   Pins.h (schematic pinout), Board.* (bring-up, device id)
-├── config/                  Config.h (defaults/tuning), Theme.h (colors), Strings.h (UI texts),
-│                            ScreenConfig (screen rotation setting)
+├── config/                  Config.h (defaults/tuning), Theme.h, Strings.h, ScreenConfig
 ├── core/                    Logger, Settings (NVS), SharedState (task-safe snapshots)
-├── display/                 Display.h (WuaDisplay-LMX), Compositor (frames + crossfade),
-│                            TinyFont, Icons, Widgets (layouts, labels),
+├── display/                 Display.h (WuaDisplay-LMX), Compositor, TinyFont, Icons, Widgets,
 │                            ColorScale, TextUtil (UTF-8 -> CP437)
 ├── input/                   Button (debounce, click / long press)
-├── net/                     WifiService (WiFiManager portal, /wifi page), TimeService (SNTP),
-│                            Timezones, NetWorker (background HTTP task), HttpJson
-├── providers/
-│   ├── ticker/              BinanceTickerProvider
-│   ├── weather/             OpenMeteoWeatherProvider
-│   └── sensors/             SensorManager + SHT4x, SHT3x, AHT2x, BME280 drivers
-├── states/                  DisplayController, base classes (Static / Paged / ScrollText)
-│                            + one file per screen
-├── web/                     SettingsServer (settings page + JSON API)
-└── bench/                   FPS benchmark
+├── net/                     TimeService (SNTP), Timezones, NetWorker (background HTTP task),
+│                            HttpJson (esp_http_client, verified TLS)
+├── providers/               ticker (Binance), weather (Open-Meteo), sensors (SHT4x, SHT3x, AHT2x, BME280)
+├── states/                  DisplayController, base classes + one file per screen
+└── web/                     SettingsJson (settings page API, transport-free)
 web/settings.html            settings page source (embedded at build time)
-tools/                       embed_web.py (pre-build), release_assets.py (release workflow)
+src/bench/                   FPS benchmark (PlatformIO env c3_bench)
+tools/                       check_version.py, release_assets.py, api_smoke_test.py
 docs/images/                 README images
 ```
 
@@ -301,12 +427,18 @@ docs/images/                 README images
 <details>
 <summary>⚙️ <b>How it fits together</b></summary>
 
-- **Main loop** (never blocks): WiFi state machine, buttons, sensor sampling,
-  `DisplayController` (screen rotation + library scroll / crossfade) and the
-  settings page.
+- **ESPHome** runs WiFi (station, setup access point, captive portal, Improv),
+  mDNS, the Home Assistant API, OTA and the logger.
+- **`WuaStation`** (the component) implements the core's `Host` interface on
+  top of ESPHome, serves the settings page and turns Home Assistant commands
+  into calls on the core, and the core's changes into entity states.
+- **Main loop** (never blocks): buttons, sensor sampling, `DisplayController`
+  (screen rotation + library scroll / crossfade).
 - **Network task** (`NetWorker`): runs every internet job one after another
   while WiFi is up and publishes results through `SharedState<T>`, so HTTPS
   requests never freeze the display.
+- **Web server task**: the settings page reads a snapshot of the settings and
+  hands every change to the main loop.
 
 </details>
 
@@ -315,20 +447,24 @@ docs/images/                 README images
 - 🖼️ **New screen**: derive from `StaticStateBase` (implement `render()`),
   `PagedStateBase` (fixed pages: `beginPages()` / `renderPage()`) or
   `ScrollTextStateBase` (implement `nextPass()`). Give it an id in
-  `config/ScreenConfig` (name and default time), map it in `App::screen()` and
-  add its name and description to the `I18N` tables of `web/settings.html`, so
-  it can be placed from the settings page. Return `priority() > 0` for an
-  interrupt screen.
+  `config/ScreenConfig` (name, title and default time), map it in
+  `Station::screen()`, add its name and description to the `I18N` tables of
+  `web/settings.html`, and its switch and select option in
+  `components/wuastation/switch.py` / `select.py`. Return `priority() > 0` for
+  an interrupt screen.
 - 🌐 **New internet source**: implement `INetJob` (blocking `run()` returning
   the next delay), publish a plain struct with `SharedState<T>`, add it to the
-  `NetWorker` in `App::setup()`.
+  `NetWorker` in `Station::setup()`.
 - 🌡️ **New I2C sensor**: implement `ISensor` (probe / start / read) and add it
   to `SensorManager::_candidates`.
+- 🏡 **New Home Assistant entity**: add a platform file in
+  `components/wuastation/` (see `sensor.py`) and publish it from
+  `WuaStation`.
 
-> [!CAUTION]
-> HTTPS is used without certificate validation (public, read-only APIs). Do not
-> reuse `HttpJson` for anything that sends secrets. Binance falls back to
-> `data-api.binance.vision` if `api.binance.com` is blocked in your region.
+> [!NOTE]
+> HTTPS servers are verified against the ESP-IDF certificate bundle. Binance
+> falls back to `data-api.binance.vision` if `api.binance.com` is blocked in
+> your region.
 
 ## 📄 License
 

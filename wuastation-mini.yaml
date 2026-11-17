@@ -1,0 +1,176 @@
+# =============================================================================
+#  WuaStation-mini -- product firmware (ESPHome)
+#
+#  ESP32-C3-WROOM-02-N4 + LMX1p panoramic LED matrix (18x7 SK6805).
+#  The station works on its own exactly as without ESPHome: clock, weather,
+#  crypto ticker, sensor, settings page. Home Assistant finds it on the
+#  network and adds it in one click (Settings > Devices & services).
+#
+#  Build from this repository (the component comes from the local folder):
+#    esphome -s components_source components run wuastation-mini.yaml
+# =============================================================================
+
+substitutions:
+  name: wuastation-mini
+  friendly_name: WuaStation mini
+  # Where the wuastation component comes from. Release builds and local
+  # development pass the repository folder instead: -s components_source components
+  components_source: github://WuaLeds/WuaStation-Mini-firmware@v0.4
+  log_level: INFO
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  # One name per station on the network: wuastation-mini-3f7590.local
+  name_add_mac_suffix: true
+  comment: Clock, weather, crypto and sensor readings on an 18x7 LED matrix
+  project:
+    name: wualabs.wuastation-mini
+    version: "0.4"
+  min_version: 2026.10.0
+
+esp32:
+  board: esp32-c3-devkitm-1
+  flash_size: 4MB
+  framework:
+    type: arduino
+  # The firmware core and its libraries (FastLED, WuaDisplay-LMX...) are
+  # PlatformIO libraries.
+  toolchain: platformio
+
+external_components:
+  - source: ${components_source}
+    components: [wuastation]
+
+# ---- System -----------------------------------------------------------------
+
+logger:
+  level: ${log_level}
+  hardware_uart: USB_SERIAL_JTAG
+
+# Home Assistant. Without it the station keeps working: no reboot when no
+# client connects.
+api:
+  reboot_timeout: 0s
+  actions:
+    # Scroll a notification over any screen ("Doorbell", "Washing done"...).
+    - action: show_message
+      variables:
+        message: string
+      then:
+        - lambda: "id(station).show_message(message);"
+    # Jump to a screen: time, date, weather, forecast, indoor, ticker,
+    # message, celebration, timer.
+    - action: show_screen
+      variables:
+        screen: string
+      then:
+        - lambda: "id(station).show_screen(screen);"
+
+ota:
+  - platform: esphome
+
+# No network built in: it is set from the setup access point (WuaStation-XXXX,
+# password WuaLeds2025, named by the station) or over USB (Improv). An update
+# from firmware 0.3 keeps the network it had.
+wifi:
+  reboot_timeout: 0s
+  ap: {}
+
+captive_portal:
+
+improv_serial:
+
+dashboard_import:
+  package_import_url: github://WuaLeds/WuaStation-Mini-firmware/wuastation-mini.yaml@main
+  import_full_config: false
+
+# ---- The station --------------------------------------------------------------
+
+wuastation:
+  id: station
+
+light:
+  - platform: wuastation
+    name: Display
+
+text:
+  - platform: wuastation
+    message:
+      name: Message
+
+select:
+  - platform: wuastation
+    screen:
+      name: Screen
+
+switch:
+  - platform: wuastation
+    time_screen:
+      name: Time screen
+    date_screen:
+      name: Date screen
+    weather_screen:
+      name: Weather screen
+    forecast_screen:
+      name: Forecast screen
+    indoor_screen:
+      name: Indoor screen
+    ticker_screen:
+      name: Ticker screen
+    message_screen:
+      name: Message screen
+    celebration_screen:
+      name: Celebration screen
+    timer_screen:
+      name: Timer screen
+
+button:
+  - platform: wuastation
+    next_screen:
+      name: Next screen
+    factory_reset:
+      name: Factory reset
+      disabled_by_default: true
+  - platform: restart
+    name: Restart
+
+event:
+  - platform: wuastation
+    up_button:
+      name: Button UP
+    down_button:
+      name: Button DOWN
+    touch_button:
+      name: Button TOUCH
+
+sensor:
+  - platform: wuastation
+    indoor_temperature:
+      name: Indoor temperature
+    indoor_humidity:
+      name: Indoor humidity
+    indoor_pressure:
+      name: Indoor pressure
+    outdoor_temperature:
+      name: Outdoor temperature
+    outdoor_humidity:
+      name: Outdoor humidity
+    rain_probability:
+      name: Chance of rain today
+    uv_index:
+      name: UV index today
+    air_quality_index:
+      name: Air quality index
+  - platform: wifi_signal
+    name: WiFi signal
+    update_interval: 60s
+  - platform: uptime
+    name: Uptime
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: IP address
+    ssid:
+      name: WiFi network
