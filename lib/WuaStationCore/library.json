@@ -1,6 +1,6 @@
 {
   "name": "WuaStationCore",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Core of the WuaStation-mini firmware: screens, internet data, sensors and settings for the LMX1p 18x7 LED matrix. Hosted by ESPHome through components/wuastation. Also needs the Arduino-ESP32 built-ins Preferences, Wire and SPI.",
   "keywords": "wualeds, wuastation, led matrix, esp32-c3, esphome",
   "license": "MIT",

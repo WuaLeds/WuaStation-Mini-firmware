@@ -9,7 +9,7 @@
 //  and edited from the settings page or Home Assistant.
 // =============================================================================
 
-#define WUA_FIRMWARE_VERSION "0.4"
+#define WUA_FIRMWARE_VERSION "0.4.1"
 
 namespace Config
 {

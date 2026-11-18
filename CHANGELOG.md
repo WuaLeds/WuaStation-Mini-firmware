@@ -7,6 +7,15 @@ versions match the GitHub release tags (`WUA_FIRMWARE_VERSION` in
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-18
+
+### Fixed
+- Firmware update entity: the station can read the update manifest and
+  download new firmware from GitHub. GitHub's redirect carries a ~4.2 KB
+  header that did not fit the 2 KB receive buffer, so 0.4 never found an
+  update. Stations on 0.4 need this version flashed once (web flasher, OTA
+  from the ESPHome dashboard or USB).
+
 ## [0.4] - 2026-11-18
 
 First official release. The firmware is now an ESPHome build: it works on its
@@ -117,7 +126,8 @@ own as before and joins Home Assistant when wanted.
   alerts.
 - WiFi setup portal and settings page, button controls and factory reset.
 
-[Unreleased]: https://github.com/WuaLeds/WuaStation-Mini-firmware/compare/v0.4...HEAD
+[Unreleased]: https://github.com/WuaLeds/WuaStation-Mini-firmware/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/WuaLeds/WuaStation-Mini-firmware/compare/v0.4...v0.4.1
 [0.4]: https://github.com/WuaLeds/WuaStation-Mini-firmware/compare/v0.3...v0.4
 [0.3]: https://github.com/WuaLeds/WuaStation-Mini-firmware/compare/v0.2...v0.3
 [0.2]: https://github.com/WuaLeds/WuaStation-Mini-firmware/compare/v0.1...v0.2

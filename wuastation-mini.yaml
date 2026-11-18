@@ -15,7 +15,7 @@ substitutions:
   friendly_name: WuaStation mini
   # Where the wuastation component comes from. Release builds and local
   # development pass the repository folder instead: -s components_source components
-  components_source: github://WuaLeds/WuaStation-Mini-firmware@v0.4
+  components_source: github://WuaLeds/WuaStation-Mini-firmware@v0.4.1
   # Firmware releases offered by the update entity (made by the release
   # workflow, tools/release_assets.py).
   update_manifest: https://github.com/WuaLeds/WuaStation-Mini-firmware/releases/latest/download/esphome-update.json
@@ -30,7 +30,7 @@ esphome:
   # Home Assistant shows "<maker>.<model>" as manufacturer and model.
   project:
     name: Wualeds.WuaStation mini
-    version: "0.4"
+    version: "0.4.1"
   min_version: 2026.10.0
 
 esp32:
@@ -83,8 +83,10 @@ ota:
 
 http_request:
   id: http_request_component
-  # GitHub answers release downloads with a long redirect.
-  buffer_size_rx: 2048
+  # GitHub answers release downloads with a redirect whose headers must fit
+  # in this buffer, one at a time: its Content-Security-Policy is ~4.2 KB.
+  # Allocated only while a request runs.
+  buffer_size_rx: 8192
 
 # Firmware update entity: Home Assistant offers each new GitHub release.
 update:
