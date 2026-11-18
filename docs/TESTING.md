@@ -42,8 +42,11 @@ drives the station through the ESPHome API the way Home Assistant does.
       (password `WuaLeds2025`): the captive portal opens and lists networks.
 - [ ] After choosing the network the station joins it and the instructions
       stop.
-- [ ] After another factory reset, set the network from a phone over
-      Bluetooth (Improv app, or Home Assistant's *Improv via BLE* discovery).
+- [ ] After another factory reset (or *Change WiFi network*), set the network
+      from a phone over Bluetooth (Improv app, or Home Assistant's *Improv via
+      BLE* discovery). Once connected the log says `Bluetooth off`.
+- [ ] Memory (`/api/status`): `heap` stays above ~120 KB in normal use and
+      `heapMin` above ~40 KB.
 
 ## 5. Home Assistant
 

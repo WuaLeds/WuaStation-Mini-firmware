@@ -68,7 +68,8 @@ works on its own with its settings page, and in Home Assistant it exposes the
 display as a light, the message, the screen rotation, the buttons as events
 and every reading as a sensor.
 
-WiFi is set from a phone over Bluetooth (Improv), over USB (Improv serial) or
+WiFi is set from a phone over Bluetooth (Improv, on only while the station
+has no network), over USB (Improv serial) or
 from the setup access point. New firmware is offered by the update entity.
 
 ## GPIO Pinout

@@ -28,7 +28,11 @@ own as before and joins Home Assistant when wanted.
   (`esphome-update.json`, attached by the release workflow) and Home
   Assistant offers to install it.
 - WiFi set from a phone over Bluetooth (Improv app or Home Assistant's Improv
-  via BLE), or over USB right after flashing (Improv serial).
+  via BLE), or over USB right after flashing (Improv serial). Bluetooth is on
+  only while the station has no network and off in normal use, so it costs no
+  memory or radio time once connected.
+- `/api/status` reports free memory, the lowest since boot and the largest
+  free block.
 - `docs/brand`: steps and images to list Wualeds in Made for ESPHome and in
   Home Assistant's integration list (`tools/brand_images.py`).
 - Settings page: Home Assistant connection status and *Change WiFi network*.

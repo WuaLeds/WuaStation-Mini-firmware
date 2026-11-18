@@ -141,7 +141,8 @@ break after every 4th block, and goes on by itself until stopped. Times are in
 The network can also be set from a phone over Bluetooth (Improv: the
 [Improv app](https://www.improv-wifi.com), or Home Assistant, which finds the
 station with its *Improv via BLE* integration) and, right after flashing from
-the browser, over USB. If the saved network disappears (new router, moving house) the
+the browser, over USB. Bluetooth is on only while the station has no network;
+once connected it is switched off. If the saved network disappears (new router, moving house) the
 station opens `WuaStation-XXXX` again by itself after a minute; *Change WiFi
 network* on the settings page does it on purpose.
 
