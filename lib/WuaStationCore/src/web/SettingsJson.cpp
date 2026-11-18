@@ -1,5 +1,6 @@
 #include "web/SettingsJson.h"
 
+#include <esp_heap_caps.h>
 #include <math.h>
 #include <time.h>
 #include "config/Config.h"
@@ -68,6 +69,11 @@ namespace SettingsJson
             strftime(clock, sizeof(clock), "%H:%M", &now);
         out["clock"] = clock;
         out["uptime"] = millis() / 1000UL;
+        // Memory: free now, lowest since boot (HTTPS peaks), largest block
+        // (TLS needs ~16 KB in one piece).
+        out["heap"] = heap_caps_get_free_size(MALLOC_CAP_8BIT);
+        out["heapMin"] = heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT);
+        out["heapBlock"] = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
     }
 
     void writeSettings(JsonObject out, const Settings &s)
