@@ -7,7 +7,7 @@ versions match the GitHub release tags (`WUA_FIRMWARE_VERSION` in
 
 ## [Unreleased]
 
-## [0.4] - 2026-11-17
+## [0.4] - 2026-11-18
 
 First official release. The firmware is now an ESPHome build: it works on its
 own as before and joins Home Assistant when wanted.
