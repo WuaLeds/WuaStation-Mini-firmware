@@ -429,7 +429,7 @@ void Station::showWifiInfo()
     {
         char buf[128];
         if (_host.apActive())
-            snprintf(buf, sizeof(buf), Strings::kPortalFmt, _host.apName(), _host.apPassword());
+            snprintf(buf, sizeof(buf), Strings::kPortalFmt, _host.apName());
         else
             strlcpy(buf, Strings::kInfoOffline, sizeof(buf));
         _alertState.push(buf, Theme::kPortal, 1);

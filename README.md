@@ -131,7 +131,7 @@ break after every 4th block, and goes on by itself until stopped. Times are in
 ## 📶 Setup
 
 1. On first boot the board opens the WiFi network **`WuaStation-XXXX`**
-   (password `WuaLeds2025`) and scrolls the instructions.
+   (open, no password) and scrolls the instructions.
 2. Join it from your phone: the setup page opens by itself (or open
    `http://192.168.4.1`). Pick your network and type its password.
 3. Once connected, the settings page is served on your network at

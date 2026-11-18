@@ -83,10 +83,11 @@ ota:
 
 http_request:
   id: http_request_component
-  # GitHub answers release downloads with a redirect whose headers must fit
-  # in this buffer, one at a time: its Content-Security-Policy is ~4.2 KB.
-  # Allocated only while a request runs.
-  buffer_size_rx: 8192
+  # GitHub redirects release downloads to a signed URL of ~900 characters, and
+  # the request line (method, path and query) has to fit in the send buffer
+  # (512 bytes by default). Both buffers exist only while a request runs.
+  buffer_size_tx: 2048
+  buffer_size_rx: 2048
 
 # Firmware update entity: Home Assistant offers each new GitHub release.
 update:
@@ -95,8 +96,8 @@ update:
     name: Firmware
     source: ${update_manifest}
 
-# No network built in: it is set from the setup access point (WuaStation-XXXX,
-# password WuaLeds2025, named by the station), over Bluetooth or over USB
+# No network built in: it is set from the open setup access point
+# (WuaStation-XXXX, named by the station), over Bluetooth or over USB
 # (Improv). An update from firmware 0.3 keeps the network it had.
 wifi:
   id: wifi_component

@@ -9,9 +9,8 @@ namespace Strings
 {
     constexpr const char *kSplash = "WuaStation";
 
-    // printf-style: AP name, AP password
-    constexpr const char *kPortalFmt = "WiFi setup: join %s  pass %s  open 192.168.4.1";
-    constexpr const char *kPortalOpenFmt = "WiFi setup: join %s  open 192.168.4.1";
+    // printf-style: AP name (the setup network is open)
+    constexpr const char *kPortalFmt = "WiFi setup: join %s  open 192.168.4.1";
 
     // printf-style: IP, hostname, firmware version, Home Assistant note
     constexpr const char *kInfoOnlineFmt = "IP %s  %s.local  v%s%s";

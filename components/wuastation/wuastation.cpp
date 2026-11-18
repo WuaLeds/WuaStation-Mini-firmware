@@ -60,12 +60,14 @@ namespace esphome::wuastation
     void WuaStation::setup_access_point_()
     {
         // "WuaStation-7590": same name as firmware 0.3, shown on the matrix.
+        // Open network, like every ESPHome device: it only exists while the
+        // station has no network, and Made for ESPHome allows no built-in
+        // passwords.
         snprintf(this->ap_name_, sizeof(this->ap_name_), "%s-%s", Config::kDeviceName, Board::deviceId());
         if (wifi::global_wifi_component == nullptr)
             return;
         wifi::WiFiAP ap;
         ap.set_ssid(this->ap_name_);
-        ap.set_password(Config::kPortalPassword);
         wifi::global_wifi_component->set_ap(ap);
     }
 
@@ -251,11 +253,6 @@ namespace esphome::wuastation
     bool WuaStation::apActive() const
     {
         return wifi::global_wifi_component != nullptr && wifi::global_wifi_component->is_ap_active();
-    }
-
-    const char *WuaStation::apPassword() const
-    {
-        return Config::kPortalPassword;
     }
 
     bool WuaStation::homeAssistantConnected() const

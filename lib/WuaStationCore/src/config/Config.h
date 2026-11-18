@@ -14,9 +14,8 @@
 namespace Config
 {
     // ---- Identity / WiFi (the WiFi itself is run by ESPHome) ---------------
-    constexpr const char *kDeviceName = "WuaStation";      // setup AP: "WuaStation-XXXX"
-    constexpr const char *kPortalPassword = "WuaLeds2025"; // setup AP password (>= 8 chars, "" = open)
-    constexpr uint32_t kOfflineAfterMs = 30000;            // link lost this long -> "offline" icon
+    constexpr const char *kDeviceName = "WuaStation"; // setup AP (open): "WuaStation-XXXX"
+    constexpr uint32_t kOfflineAfterMs = 30000;       // link lost this long -> "offline" icon
 
     // ---- Defaults for the user settings ------------------------------------
     // "auto": the clock follows the weather city. Otherwise a zone name

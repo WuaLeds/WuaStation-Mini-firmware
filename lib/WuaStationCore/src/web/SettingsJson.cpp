@@ -53,7 +53,6 @@ namespace SettingsJson
         out["rssi"] = host.rssi();
         out["homeAssistant"] = host.homeAssistantConnected();
         out["apName"] = host.apName();
-        out["apPassword"] = host.apPassword();
         out["sensor"] = sensors.sensorName();
         if (sensors.hasReading())
         {
