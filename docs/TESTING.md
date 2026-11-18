@@ -53,7 +53,7 @@ drives the station through the ESPHome API the way Home Assistant does.
 - [ ] The station appears in *Settings › Devices & services* as discovered
       (ESPHome); *Configure* adds it.
 - [ ] Device page: manufacturer Wualeds, model WuaStation mini, firmware
-      version (project 0.4), every entity.
+      version (the project version), every entity.
 - [ ] 🤖 Display light: on/off and brightness, mirrored on the settings page.
 - [ ] 🤖 Message text: changes the scrolling message.
 - [ ] 🤖 Screen select: shows the current screen, jumps to the chosen one.
@@ -69,7 +69,7 @@ drives the station through the ESPHome API the way Home Assistant does.
 - [ ] Restart Home Assistant: the station reconnects and keeps working while
       Home Assistant is down.
 - [ ] ESPHome dashboard (add-on): the station is offered for adoption.
-- [ ] Firmware update entity: shows the installed version; once the release
-      is published, `esphome-update.json` is reachable and a station on an
-      older version is offered the update and installs it.
+- [ ] Firmware update entity: shows the installed version and the latest
+      release's version (the log has no `Failed to fetch manifest`); a
+      station on an older version is offered the update and installs it.
 - [ ] Logs from Home Assistant / ESPHome dashboard show the station's logs.
