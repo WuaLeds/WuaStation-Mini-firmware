@@ -138,8 +138,10 @@ break after every 4th block, and goes on by itself until stopped. Times are in
    **`http://wuastation-mini-xxxxxx.local`** (or the IP shown with a DOWN long
    press).
 
-Right after flashing from the browser, the network can also be set over USB
-(Improv). If the saved network disappears (new router, moving house) the
+The network can also be set from a phone over Bluetooth (Improv: the
+[Improv app](https://www.improv-wifi.com), or Home Assistant, which finds the
+station with its *Improv via BLE* integration) and, right after flashing from
+the browser, over USB. If the saved network disappears (new router, moving house) the
 station opens `WuaStation-XXXX` again by itself after a minute; *Change WiFi
 network* on the settings page does it on purpose.
 
@@ -214,6 +216,7 @@ bridged network adapter rather than NAT.
 | Indoor temperature, humidity, pressure | 🌡️ sensor | From the I2C sensor |
 | Outdoor temperature, humidity, chance of rain, UV index, air quality | 🌤️ sensor | From the weather service |
 | WiFi signal, uptime, IP address, WiFi network | 🩺 diagnostic | |
+| Firmware | ⬆️ update | Offers each new release; *Install* downloads it from GitHub |
 
 Every change is mirrored both ways: what you change on the settings page or
 with the buttons shows up in Home Assistant, and the other way round.
@@ -272,7 +275,12 @@ automation:
 (`dashboard_import`), so the ESPHome add-on offers to *adopt* it. Adopting
 creates a small YAML that pulls [`wuastation-mini.yaml`](wuastation-mini.yaml)
 from this repository; from there you can add an API encryption key or your own
-entities and update the station over the air.
+entities and update the station over the air. Every entity and component has
+an `id`, so an adopted configuration can change or remove any of them with
+`!extend` / `!remove`.
+
+Listing Wualeds as a brand in Home Assistant's integration list and in the
+*Made for ESPHome* catalogue: see [`docs/brand`](docs/brand/README.md).
 
 ## 🛠️ Build & flash
 
@@ -303,6 +311,12 @@ Home Assistant users get). Add `-s log_level DEBUG` for detailed logs.
 > ```powershell
 > $env:PLATFORMIO_CORE_DIR = "$HOME\.platformio-esphome"
 > ```
+>
+> The Bluetooth stack (Improv over BLE) has compile command lines longer than
+> Windows accepts (`cannot execute cc1.exe`). Build on Linux or in WSL, or
+> download the firmware the [CI](.github/workflows/ci.yml) builds for every
+> pull request (artifact `wuastation-mini-firmware`) and flash it with
+> `esphome upload wuastation-mini.yaml --device <ip> --file firmware.bin`.
 
 <details>
 <summary>🧪 <b>Testing without Home Assistant</b></summary>
@@ -355,8 +369,9 @@ firmware from the browser. To publish a version:
    `partitions.bin`, `boot_app0.bin`, `firmware.bin` and a `manifest.json`
    with each part's offset, size and SHA-256, made by
    [`tools/release_assets.py`](tools/release_assets.py)) plus a merged
-   `.factory.bin`, and calls the `VERCEL_DEPLOY_HOOK` secret so the website is
-   rebuilt with the new version.
+   `.factory.bin` and `esphome-update.json` (what the stations' update entity
+   reads, so Home Assistant offers the new version), and calls the
+   `VERCEL_DEPLOY_HOOK` secret so the website is rebuilt with the new version.
 
 The workflow stops if the versions do not match the tag. To rebuild an
 existing tag, run it by hand from the Actions tab (*Run workflow*).
@@ -424,8 +439,8 @@ lib/WuaStationCore/src/      firmware core (no ESPHome inside)
 └── web/                     SettingsJson (settings page API, transport-free)
 web/settings.html            settings page source (embedded at build time)
 src/bench/                   FPS benchmark (PlatformIO env c3_bench)
-tools/                       check_version.py, release_assets.py, api_smoke_test.py
-docs/images/                 README images
+tools/                       check_version.py, release_assets.py, api_smoke_test.py, brand_images.py
+docs/                        TESTING.md (release checklist), images/, brand/ (Wualeds in ESPHome and Home Assistant)
 ```
 
 </details>
