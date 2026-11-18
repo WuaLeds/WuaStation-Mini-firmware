@@ -104,8 +104,11 @@ wifi:
 captive_portal:
   id: captive_portal_component
 
+# Bluetooth is off in normal use: the station switches it on only while it has
+# no network (first setup, or the saved network out of reach), for Improv.
 esp32_ble:
   id: ble
+  enable_on_boot: false
 
 # WiFi from a phone (Improv app, or Home Assistant's Improv via BLE) while the
 # station has no network.
