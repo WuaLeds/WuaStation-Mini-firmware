@@ -37,7 +37,6 @@ public:
     // network is out of reach (to move the station to a new network).
     virtual bool apActive() const = 0;
     virtual const char *apName() const = 0;
-    virtual const char *apPassword() const = 0;
 
     // A Home Assistant (ESPHome API) client is connected.
     virtual bool homeAssistantConnected() const = 0;

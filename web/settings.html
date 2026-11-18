@@ -336,7 +336,7 @@ const I18N = {
     haHint: "Para agregarla, en Home Assistant: Ajustes › Dispositivos y servicios. La estación aparece sola (ESPHome).",
     wifiChange: "Cambiar red WiFi",
     wifiConfirm: "La estación olvida la red WiFi actual y abre su WiFi de configuración. ¿Continuar?",
-    wifiTitle: "Cambiando de red", wifiText: "Desde el celular, conectate a la red {ap} (contraseña {pass}) y elegí la nueva red WiFi.",
+    wifiTitle: "Cambiando de red", wifiText: "Desde el celular, conectate a la red {ap} y elegí la nueva red WiFi.",
     savedLive: "Guardado",
     unsaved: "Tenés cambios sin guardar", discard: "Descartar", save: "Guardar",
     saving: "Guardando…", saveFail: "No se pudo guardar. Revisá la conexión.",
@@ -381,7 +381,7 @@ const I18N = {
     haHint: "To add it, in Home Assistant: Settings › Devices & services. The station shows up by itself (ESPHome).",
     wifiChange: "Change WiFi network",
     wifiConfirm: "The station forgets the current WiFi network and opens its setup WiFi. Continue?",
-    wifiTitle: "Changing network", wifiText: "From your phone, join the {ap} network (password {pass}) and pick the new WiFi network.",
+    wifiTitle: "Changing network", wifiText: "From your phone, join the {ap} network and pick the new WiFi network.",
     savedLive: "Saved",
     unsaved: "You have unsaved changes", discard: "Discard", save: "Save",
     saving: "Saving…", saveFail: "Could not save. Check the connection.",
@@ -865,7 +865,7 @@ $("#wifi-forget").onclick = async () => {
   if (!confirm(t("wifiConfirm"))) return;
   busy = true;
   try { await fetch("/api/wifi/forget", { method: "POST" }); } catch (e) {}
-  showOverlay(t("wifiTitle"), t("wifiText").replace("{ap}", (cfg && cfg.apName) || "WuaStation").replace("{pass}", (cfg && cfg.apPassword) || ""));
+  showOverlay(t("wifiTitle"), t("wifiText").replace("{ap}", (cfg && cfg.apName) || "WuaStation"));
 };
 $("#restart").onclick = async () => {
   if (!confirm(t("restartConfirm"))) return;

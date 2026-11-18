@@ -25,11 +25,7 @@ protected:
     bool nextPass(String &text, Rgb &color) override
     {
         char buf[128];
-        const char *pass = _host.apPassword();
-        if (pass && pass[0])
-            snprintf(buf, sizeof(buf), Strings::kPortalFmt, _host.apName(), pass);
-        else
-            snprintf(buf, sizeof(buf), Strings::kPortalOpenFmt, _host.apName());
+        snprintf(buf, sizeof(buf), Strings::kPortalFmt, _host.apName());
         text = buf;
         color = Theme::kPortal;
         return true;

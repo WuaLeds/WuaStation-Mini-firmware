@@ -65,7 +65,6 @@ namespace esphome::wuastation
         int8_t rssi() const override;
         bool apActive() const override;
         const char *apName() const override { return this->ap_name_; }
-        const char *apPassword() const override;
         bool homeAssistantConnected() const override;
         void restart() override;
         void forgetWifi() override;

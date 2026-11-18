@@ -39,7 +39,7 @@ drives the station through the ESPHome API the way Home Assistant does.
 
 - [ ] Hold DOWN while powering on: `RST`, then `OK`, reboot.
 - [ ] The matrix scrolls the setup instructions; join `WuaStation-XXXX`
-      (password `WuaLeds2025`): the captive portal opens and lists networks.
+      (open, no password): the captive portal opens and lists networks.
 - [ ] After choosing the network the station joins it and the instructions
       stop.
 - [ ] After another factory reset (or *Change WiFi network*), set the network

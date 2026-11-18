@@ -11,10 +11,16 @@ versions match the GitHub release tags (`WUA_FIRMWARE_VERSION` in
 
 ### Fixed
 - Firmware update entity: the station can read the update manifest and
-  download new firmware from GitHub. GitHub's redirect carries a ~4.2 KB
-  header that did not fit the 2 KB receive buffer, so 0.4 never found an
-  update. Stations on 0.4 need this version flashed once (web flasher, OTA
-  from the ESPHome dashboard or USB).
+  download new firmware from GitHub. GitHub redirects release downloads to a
+  signed URL of ~900 characters, which did not fit the 512-byte send buffer,
+  so 0.4 never found an update. Stations on 0.4 need this version flashed
+  once (web flasher, OTA from the ESPHome dashboard or USB).
+
+### Changed
+- The setup network `WuaStation-XXXX` is open, like on every ESPHome device,
+  instead of using a password shared by every station. It only exists while
+  the station has no network; WiFi can also be set over Bluetooth or USB
+  (Improv). Required by Made for ESPHome, which allows no built-in passwords.
 
 ## [0.4] - 2026-11-18
 
