@@ -109,6 +109,7 @@ namespace esphome::wuastation
     protected:
         void setup_access_point_();
         void migrate_legacy_wifi_();
+        void update_bluetooth_();
         void publish_settings_();
         void publish_sensors_();
 
@@ -118,6 +119,7 @@ namespace esphome::wuastation
 
         char ap_name_[24]{};
         uint32_t offline_since_{0};
+        int8_t bluetooth_on_{-1}; // -1 = not decided yet
         bool legacy_wifi_pending_{false};
         char legacy_ssid_[33]{};
         char legacy_password_[65]{};

@@ -7,6 +7,9 @@
 #include "esphome/core/log.h"
 #include "esphome/core/preferences.h"
 #include "esphome/components/wifi/wifi_component.h"
+#ifdef USE_ESP32_BLE
+#include "esphome/components/esp32_ble/ble.h"
+#endif
 #ifdef USE_API
 #include "esphome/components/api/api_server.h"
 #endif
@@ -92,6 +95,7 @@ namespace esphome::wuastation
             this->offline_since_ = 0;
         else if (this->offline_since_ == 0)
             this->offline_since_ = millis() | 1u;
+        this->update_bluetooth_();
 
         this->station_.loop();
         this->publish_sensors_();
@@ -106,6 +110,30 @@ namespace esphome::wuastation
 #endif
             this->onScreenChanged();
         }
+    }
+
+    // Bluetooth only carries Improv (WiFi from a phone). It is on while the
+    // station has no network (first setup, or the saved network out of reach)
+    // and off once connected: in normal use it takes no memory and no radio
+    // time from WiFi. Starting it blocks the loop for ~0.2 s, never while the
+    // station is in use.
+    void WuaStation::update_bluetooth_()
+    {
+#ifdef USE_ESP32_BLE
+        auto *ble = esp32_ble::global_ble;
+        if (ble == nullptr)
+            return;
+        const NetState state = this->netState();
+        const int8_t wanted = (state == NetState::Setup || state == NetState::Offline) ? 1 : 0;
+        if (wanted == this->bluetooth_on_)
+            return;
+        this->bluetooth_on_ = wanted;
+        ESP_LOGI(TAG, "Bluetooth %s", wanted ? "on: WiFi can be set from a phone (Improv)" : "off");
+        if (wanted)
+            ble->enable();
+        else
+            ble->disable();
+#endif
     }
 
     void WuaStation::dump_config()
