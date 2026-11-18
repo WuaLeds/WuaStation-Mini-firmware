@@ -63,6 +63,17 @@ jobs:
       - name: Build
         run: esphome -s components_source components compile wuastation-mini.yaml
 
+      # The same files a release attaches, to test a pull request on a board
+      # (Windows cannot build the Bluetooth stack: its command lines get too long).
+      - name: Collect firmware files
+        run: python tools/release_assets.py "ci-${GITHUB_SHA::7}" wuastation-mini dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wuastation-mini-firmware
+          path: dist/
+          retention-days: 14
+
   bench:
     name: Benchmark (PlatformIO)
     runs-on: ubuntu-latest

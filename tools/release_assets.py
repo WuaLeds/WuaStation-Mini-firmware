@@ -11,7 +11,10 @@ flash images and offsets); a PlatformIO project folder also works, then
 It copies the bootloader, partition table, boot_app0 and the application to
 <out>/ and writes <out>/manifest.json with the flash offset, size and SHA-256
 of each part. ESPHome's merged image (flash at 0x0, erases the settings) is
-attached too, as <board>-<tag>.factory.bin, for esptool users.
+attached too, as <board>-<tag>.factory.bin, for esptool users, and
+<out>/esphome-update.json: the manifest the station's update entity reads
+(ESPHome http_request update: chip family, application URL and MD5), so Home
+Assistant offers each new release.
 
 The release workflow attaches these files to the GitHub release; wualeds.com
 downloads them when it is built, and its /firmware page checks each part
@@ -29,6 +32,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 BOARD = "wuastation-mini"  # product slug on wualeds.com
+PRODUCT = "WuaStation mini"
+CHIP_FAMILY = "ESP32-C3"
+REPO = os.environ.get("GITHUB_REPOSITORY", "WuaLeds/WuaStation-Mini-firmware")
 
 
 def app_offset(meta, images):
@@ -71,7 +77,8 @@ def main():
         )
         meta = json.loads(output[output.index("{"):])[env]  # skip build chatter
     images = [(int(img["offset"], 16), Path(img["path"])) for img in meta["extra"]["flash_images"]]
-    images.append((app_offset(meta, images), Path(meta["prog_path"]).with_suffix(".bin")))
+    app = Path(meta["prog_path"]).with_suffix(".bin")
+    images.append((app_offset(meta, images), app))
 
     out.mkdir(parents=True, exist_ok=True)
     parts = []
@@ -96,9 +103,30 @@ def main():
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
+    # The station reads releases/latest/download/esphome-update.json and offers
+    # the update when its version differs from the running one, so the version
+    # is the project version: "0.4", not "v0.4".
+    version = tag[1:] if tag.startswith("v") else tag
+    update = {
+        "name": PRODUCT,
+        "version": version,
+        "builds": [
+            {
+                "chipFamily": CHIP_FAMILY,
+                "ota": {
+                    "path": f"https://github.com/{REPO}/releases/download/{tag}/{app.name}",
+                    "md5": hashlib.md5(app.read_bytes()).hexdigest(),
+                    "summary": f"{PRODUCT} firmware {version}",
+                    "release_url": f"https://github.com/{REPO}/releases/tag/{tag}",
+                },
+            }
+        ],
+    }
+    (out / "esphome-update.json").write_text(json.dumps(update, indent=2) + "\n", encoding="utf-8")
+
     for p in parts:
         print(f"0x{p['offset']:05x}  {p['file']}  ({p['size']} bytes)")
-    print(f"manifest.json -> {out}/ ({tag}, commit {manifest['commit'] or '?'})")
+    print(f"manifest.json, esphome-update.json -> {out}/ ({tag}, commit {manifest['commit'] or '?'})")
 
 
 if __name__ == "__main__":

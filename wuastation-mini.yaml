@@ -16,6 +16,9 @@ substitutions:
   # Where the wuastation component comes from. Release builds and local
   # development pass the repository folder instead: -s components_source components
   components_source: github://WuaLeds/WuaStation-Mini-firmware@v0.4
+  # Firmware releases offered by the update entity (made by the release
+  # workflow, tools/release_assets.py).
+  update_manifest: https://github.com/WuaLeds/WuaStation-Mini-firmware/releases/latest/download/esphome-update.json
   log_level: INFO
 
 esphome:
@@ -46,12 +49,14 @@ external_components:
 # ---- System -----------------------------------------------------------------
 
 logger:
+  id: logger_component
   level: ${log_level}
   hardware_uart: USB_SERIAL_JTAG
 
 # Home Assistant. Without it the station keeps working: no reboot when no
 # client connects.
 api:
+  id: api_server
   reboot_timeout: 0s
   actions:
     # Scroll a notification over any screen ("Doorbell", "Washing done"...).
@@ -68,19 +73,48 @@ api:
       then:
         - lambda: "id(station).show_screen(screen);"
 
+# Your own builds over the air (ESPHome dashboard), and Wualeds releases
+# downloaded by the station itself (update entity below).
 ota:
   - platform: esphome
+    id: ota_esphome
+  - platform: http_request
+    id: ota_http_request
+
+http_request:
+  id: http_request_component
+  # GitHub answers release downloads with a long redirect.
+  buffer_size_rx: 2048
+
+# Firmware update entity: Home Assistant offers each new GitHub release.
+update:
+  - platform: http_request
+    id: firmware_update
+    name: Firmware
+    source: ${update_manifest}
 
 # No network built in: it is set from the setup access point (WuaStation-XXXX,
-# password WuaLeds2025, named by the station) or over USB (Improv). An update
-# from firmware 0.3 keeps the network it had.
+# password WuaLeds2025, named by the station), over Bluetooth or over USB
+# (Improv). An update from firmware 0.3 keeps the network it had.
 wifi:
+  id: wifi_component
   reboot_timeout: 0s
   ap: {}
 
 captive_portal:
+  id: captive_portal_component
+
+esp32_ble:
+  id: ble
+
+# WiFi from a phone (Improv app, or Home Assistant's Improv via BLE) while the
+# station has no network.
+improv_ble:
+  id: improv_ble_component
+  authorizer: none
 
 improv_serial:
+  id: improv_serial_component
 
 dashboard_import:
   package_import_url: github://WuaLeds/WuaStation-Mini-firmware/wuastation-mini.yaml@main
@@ -93,85 +127,115 @@ wuastation:
 
 light:
   - platform: wuastation
+    id: display_light
     name: Display
 
 text:
   - platform: wuastation
     message:
+      id: message_text
       name: Message
 
 select:
   - platform: wuastation
     screen:
+      id: screen_select
       name: Screen
 
 switch:
   - platform: wuastation
     time_screen:
+      id: time_screen
       name: Time screen
     date_screen:
+      id: date_screen
       name: Date screen
     weather_screen:
+      id: weather_screen
       name: Weather screen
     forecast_screen:
+      id: forecast_screen
       name: Forecast screen
     indoor_screen:
+      id: indoor_screen
       name: Indoor screen
     ticker_screen:
+      id: ticker_screen
       name: Ticker screen
     message_screen:
+      id: message_screen
       name: Message screen
     celebration_screen:
+      id: celebration_screen
       name: Celebration screen
     timer_screen:
+      id: timer_screen
       name: Timer screen
 
 button:
   - platform: wuastation
     next_screen:
+      id: next_screen_button
       name: Next screen
     factory_reset:
+      id: factory_reset_button
       name: Factory reset
       disabled_by_default: true
   - platform: restart
+    id: restart_button
     name: Restart
 
 event:
   - platform: wuastation
     up_button:
+      id: up_button
       name: Button UP
     down_button:
+      id: down_button
       name: Button DOWN
     touch_button:
+      id: touch_button
       name: Button TOUCH
 
 sensor:
   - platform: wuastation
     indoor_temperature:
+      id: indoor_temperature
       name: Indoor temperature
     indoor_humidity:
+      id: indoor_humidity
       name: Indoor humidity
     indoor_pressure:
+      id: indoor_pressure
       name: Indoor pressure
     outdoor_temperature:
+      id: outdoor_temperature
       name: Outdoor temperature
     outdoor_humidity:
+      id: outdoor_humidity
       name: Outdoor humidity
     rain_probability:
+      id: rain_probability
       name: Chance of rain today
     uv_index:
+      id: uv_index
       name: UV index today
     air_quality_index:
+      id: air_quality_index
       name: Air quality index
   - platform: wifi_signal
+    id: wifi_signal_sensor
     name: WiFi signal
     update_interval: 60s
   - platform: uptime
+    id: uptime_sensor
     name: Uptime
 
 text_sensor:
   - platform: wifi_info
     ip_address:
+      id: ip_address_text
       name: IP address
     ssid:
+      id: wifi_network_text
       name: WiFi network

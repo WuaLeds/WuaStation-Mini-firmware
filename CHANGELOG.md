@@ -21,8 +21,16 @@ own as before and joins Home Assistant when wanted.
   quality) and WiFi diagnostics. Actions `show_message` and `show_screen`.
   The device page shows Wualeds as the manufacturer and WuaStation mini as
   the model.
-- ESPHome dashboard adoption (`dashboard_import`) and OTA updates.
-- WiFi set over USB right after flashing (Improv).
+- ESPHome dashboard adoption (`dashboard_import`) and OTA updates. Every
+  entity and component has an `id`, so an adopted configuration can extend or
+  remove any of them.
+- Firmware update entity: the station checks the latest GitHub release
+  (`esphome-update.json`, attached by the release workflow) and Home
+  Assistant offers to install it.
+- WiFi set from a phone over Bluetooth (Improv app or Home Assistant's Improv
+  via BLE), or over USB right after flashing (Improv serial).
+- `docs/brand`: steps and images to list Wualeds in Made for ESPHome and in
+  Home Assistant's integration list (`tools/brand_images.py`).
 - Settings page: Home Assistant connection status and *Change WiFi network*.
 - `tools/api_smoke_test.py`: drives a station through the ESPHome API like
   Home Assistant does; `tools/check_version.py`: version consistency check.

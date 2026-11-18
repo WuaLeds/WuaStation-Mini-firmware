@@ -42,6 +42,7 @@ EXPECTED = {
         "uptime",
     },
     "text_sensor": {"ip_address", "wifi_network"},
+    "update": {"firmware"},
 }
 EXPECTED_ACTIONS = {"show_message", "show_screen"}
 
@@ -64,6 +65,7 @@ def kind(info) -> str:
         "Event": "event",
         "Sensor": "sensor",
         "TextSensor": "text_sensor",
+        "Update": "update",
     }.get(n, n)
 
 

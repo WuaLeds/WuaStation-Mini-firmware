@@ -42,6 +42,8 @@ drives the station through the ESPHome API the way Home Assistant does.
       (password `WuaLeds2025`): the captive portal opens and lists networks.
 - [ ] After choosing the network the station joins it and the instructions
       stop.
+- [ ] After another factory reset, set the network from a phone over
+      Bluetooth (Improv app, or Home Assistant's *Improv via BLE* discovery).
 
 ## 5. Home Assistant
 
@@ -64,4 +66,7 @@ drives the station through the ESPHome API the way Home Assistant does.
 - [ ] Restart Home Assistant: the station reconnects and keeps working while
       Home Assistant is down.
 - [ ] ESPHome dashboard (add-on): the station is offered for adoption.
+- [ ] Firmware update entity: shows the installed version; once the release
+      is published, `esphome-update.json` is reachable and a station on an
+      older version is offered the update and installs it.
 - [ ] Logs from Home Assistant / ESPHome dashboard show the station's logs.
